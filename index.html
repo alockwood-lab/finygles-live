@@ -282,35 +282,59 @@ const wkLabels=wks.map((_,i)=>'Wk '+(i+1));
 const wkHrs=wks.map(w=>+wkMap[w].hrs.toFixed(1));
 const wkLk=wks.map(w=>wkMap[w].lk);
 
-// Project wk 6-7 based on declining trend
-const recentHrs=[wkMap[wks[2]].hrs,wkMap[wks[3]].hrs,wkMap[wks[4]].hrs];
-const hrsDecay=recentHrs[2]/recentHrs[0];
-const w6Hrs=+(recentHrs[2]*0.85).toFixed(1);
-const w7Hrs=+(w6Hrs*0.8).toFixed(1);
-const recentLph=[wkMap[wks[2]].lk/wkMap[wks[2]].hrs,wkMap[wks[3]].lk/wkMap[wks[3]].hrs,wkMap[wks[4]].lk/wkMap[wks[4]].hrs];
-const avgLph=(recentLph[0]+recentLph[1]+recentLph[2])/3;
-const w6Lk=Math.round(w6Hrs*avgLph);
-const w7Lk=Math.round(w7Hrs*avgLph);
+// Project wk 6-7 using the calendar projection model (built below)
+// Count projected days per week, multiply by avg hrs/likes per day
+// projDays is populated later, so we calculate here after the fact —
+// moved to a function called after projection model runs
+let w6Hrs=0,w7Hrs=0,w6Lk=0,w7Lk=0;
+function calcWkProj(){
+  const wk0=new Date(2026,4,26);
+  const _avgHrs=Object.values(dayStats).reduce((a,d)=>a+d.hrs,0)/Object.keys(dayStats).length;
+  const _avgLk=Object.values(dayStats).reduce((a,d)=>a+d.lk,0)/Object.keys(dayStats).length;
+  [5,6].forEach(wn=>{
+    const wkStart=new Date(wk0.getTime()+wn*7*864e5);
+    const wkEnd=new Date(wkStart.getTime()+7*864e5);
+    let days=0;
+    // Count actual days in this week
+    for(const k of liveDays){
+      const p=k.split('-');const dt=new Date(2026,+p[0],+p[1]);
+      if(dt>=wkStart&&dt<wkEnd)days++;
+    }
+    // Count projected days in this week
+    let projD=0;
+    for(const k of projDays){
+      const p=k.split('-');const dt=new Date(2026,+p[0],+p[1]);
+      if(dt>=wkStart&&dt<wkEnd)projD++;
+    }
+    const totalD=days+projD;
+    const hrs=+(days*(Object.values(dayStats).length?_avgHrs:8)+projD*_avgHrs).toFixed(1);
+    const lk=Math.round(days*_avgLk+projD*_avgLk);
+    if(wn===5){w6Hrs=hrs;w6Lk=lk;}
+    else{w7Hrs=hrs;w7Lk=lk;}
+  });
+}
 
-const allWkLabels=[...wkLabels,'Wk 6','Wk 7'];
-const allHrs=[...wkHrs,w6Hrs,w7Hrs];
-const allLk=[...wkLk,w6Lk,w7Lk];
-
-new Chart(document.getElementById('weeklyChart'),{
-  type:'bar',
-  data:{labels:allWkLabels,datasets:[
-    {label:'Hours Live',data:allHrs,backgroundColor:allHrs.map((_,i)=>i<wks.length?'rgba(232,118,58,.6)':'rgba(232,118,58,.2)'),borderColor:allHrs.map((_,i)=>i<wks.length?'#B8613A':'#B8613A'),borderWidth:allHrs.map((_,i)=>i<wks.length?0:1.5),borderDash:(_,i)=>i>=wks.length?[5,3]:[],borderRadius:6,borderSkipped:false,yAxisID:'y',order:2},
-    {label:'Likes',data:allLk,type:'line',borderColor:'#FF8F4F',backgroundColor:'rgba(255,143,79,.08)',pointBackgroundColor:allLk.map((_,i)=>i<wks.length?'#FF8F4F':'transparent'),pointBorderColor:allLk.map((_,i)=>i<wks.length?'#FF8F4F':'#FF8F4F'),pointRadius:allLk.map((_,i)=>i<wks.length?5:4),pointStyle:allLk.map((_,i)=>i<wks.length?'circle':'rectRot'),borderWidth:3,borderDash:[],segment:{borderDash:ctx=>ctx.p0DataIndex>=wks.length-1?[6,4]:[]},tension:.3,fill:true,yAxisID:'y1',order:1},
-  ]},
-  options:{...touch,responsive:true,maintainAspectRatio:false,plugins:{
-    legend:{display:true,position:'bottom',labels:{boxWidth:10,padding:12,font:{size:11,family:'Inter'},color:'#9C8474'}},
-    tooltip:{callbacks:{label:ctx=>ctx.dataset.label==='Likes'?fm(ctx.raw)+' likes'+(ctx.dataIndex>=wks.length?' (projected)':''):ctx.raw+'h'+(ctx.dataIndex>=wks.length?' (projected)':'')}}},
-    scales:{
-      x:{grid:{display:false},ticks:{font:{size:11,weight:'bold',family:'Inter'}}},
-      y:{position:'left',title:{display:true,text:'Hours',font:{size:10},color:'#B8613A'},ticks:{font:{size:10},color:'#B8613A'},grid:{color:'rgba(74,56,40,.3)'}},
-      y1:{position:'right',title:{display:true,text:'Likes',font:{size:10},color:'#FF8F4F'},ticks:{callback:v=>fm(v),font:{size:10},color:'#FF8F4F'},grid:{display:false}}
-    }}
-});
+// Chart rendered after projection model (deferred)
+function renderWeeklyChart(){
+  const allWkLabels=[...wkLabels,'Wk 6','Wk 7'];
+  const allHrs=[...wkHrs,w6Hrs,w7Hrs];
+  const allLk=[...wkLk,w6Lk,w7Lk];
+  new Chart(document.getElementById('weeklyChart'),{
+    type:'bar',
+    data:{labels:allWkLabels,datasets:[
+      {label:'Hours Live',data:allHrs,backgroundColor:allHrs.map((_,i)=>i<wks.length?'rgba(232,118,58,.6)':'rgba(232,118,58,.2)'),borderColor:allHrs.map((_,i)=>i<wks.length?'#B8613A':'#B8613A'),borderWidth:allHrs.map((_,i)=>i<wks.length?0:1.5),borderRadius:6,borderSkipped:false,yAxisID:'y',order:2},
+      {label:'Likes',data:allLk,type:'line',borderColor:'#FF8F4F',backgroundColor:'rgba(255,143,79,.08)',pointBackgroundColor:allLk.map((_,i)=>i<wks.length?'#FF8F4F':'transparent'),pointBorderColor:allLk.map((_,i)=>i<wks.length?'#FF8F4F':'#FF8F4F'),pointRadius:allLk.map((_,i)=>i<wks.length?5:4),pointStyle:allLk.map((_,i)=>i<wks.length?'circle':'rectRot'),borderWidth:3,segment:{borderDash:ctx=>ctx.p0DataIndex>=wks.length-1?[6,4]:[]},tension:.3,fill:true,yAxisID:'y1',order:1},
+    ]},
+    options:{...touch,responsive:true,maintainAspectRatio:false,plugins:{
+      legend:{display:true,position:'bottom',labels:{boxWidth:10,padding:12,font:{size:11,family:'Inter'},color:'#9C8474'}},
+      tooltip:{callbacks:{label:ctx=>ctx.dataset.label==='Likes'?fm(ctx.raw)+' likes'+(ctx.dataIndex>=wks.length?' (projected)':''):ctx.raw+'h'+(ctx.dataIndex>=wks.length?' (projected)':'')}}},
+      scales:{
+        x:{grid:{display:false},ticks:{font:{size:11,weight:'bold',family:'Inter'}}},
+        y:{position:'left',title:{display:true,text:'Hours',font:{size:10},color:'#B8613A'},ticks:{font:{size:10},color:'#B8613A'},grid:{color:'rgba(74,56,40,.3)'}},
+        y1:{position:'right',title:{display:true,text:'Likes',font:{size:10},color:'#FF8F4F'},ticks:{callback:v=>fm(v),font:{size:10},color:'#FF8F4F'},grid:{display:false}}
+      }}
+  });
+}
 
 // Time of day chart
 const timeData=brackets.filter(b=>b.ct>0).sort((a,b)=>(b.lk/b.ct)-(a.lk/a.ct));
@@ -440,14 +464,36 @@ while(wkCursor<projEnd){
   wkCursor=new Date(wkCursor.getTime()+7*864e5);
 }
 
-// Store projected day details for tap interaction
+// Now that projDays is built, calculate weekly chart projections
+calcWkProj();
+renderWeeklyChart();
+
+// Projected day details with realistic variance
+// Use actual per-day data to compute standard deviation per DOW
+const dowHrsAll=[[],[],[],[],[],[],[]];
+const dowLkAll=[[],[],[],[],[],[],[]];
+Object.values(dayStats).forEach(d=>{
+  const dow=d.date.getDay();
+  dowHrsAll[dow].push(d.hrs);
+  dowLkAll[dow].push(d.lk);
+});
+function stddev(arr){if(arr.length<2)return arr.length?arr[0]*0.3:2;const m=arr.reduce((a,b)=>a+b)/arr.length;return Math.sqrt(arr.reduce((a,b)=>a+(b-m)**2,0)/arr.length);}
+// Seeded variation per projected day (deterministic by date so it doesn't change on reload)
+function vary(base,sd,seed){const x=Math.sin(seed*9301+49297)*.5+.5;return base+(x-0.5)*sd*1.4;}
+
 const projStats={};
+let projSeed=1;
 projDays.forEach(key=>{
   const p=key.split('-');
   const dt=new Date(2026,+p[0],+p[1]);
   const dow=dt.getDay();
-  const hrs=dowCt[dow]?dowAvgHrs[dow]:avgHrsPerDay;
-  const lk=dowCt[dow]?dowAvgLk[dow]:avgLkPerDay;
+  const baseHrs=dowCt[dow]?dowAvgHrs[dow]:avgHrsPerDay;
+  const baseLk=dowCt[dow]?dowAvgLk[dow]:avgLkPerDay;
+  const sdHrs=stddev(dowHrsAll[dow]);
+  const sdLk=stddev(dowLkAll[dow]);
+  const seed=dt.getDate()*31+dt.getMonth()*397;
+  const hrs=Math.max(2,vary(baseHrs,sdHrs,seed));
+  const lk=Math.max(1000,vary(baseLk,sdLk,seed+7));
   projStats[key]={hrs:+hrs.toFixed(1),lk:Math.round(lk),date:dt};
 });
 
