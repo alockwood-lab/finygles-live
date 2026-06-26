@@ -249,7 +249,9 @@ document.getElementById('insights').innerHTML=`
 // ── Charts ──
 Chart.defaults.color='#9C8474';
 Chart.defaults.borderColor='#362820';
-const touch={interaction:{mode:'nearest',intersect:false},events:['mousemove','mouseout','click','touchstart','touchmove']};
+const touch={interaction:{mode:'nearest',intersect:false},events:['mousemove','mouseout','click','touchstart','touchmove'],plugins:{tooltip:{mode:'nearest',intersect:false}}};
+document.addEventListener('click',e=>{if(!e.target.closest('canvas')){Chart.instances&&Object.values(Chart.instances).forEach(c=>{if(c.tooltip){c.tooltip.setActiveElements([],{});c.update();}});}});
+document.querySelectorAll('canvas').forEach(cv=>{cv.addEventListener('touchstart',function(e){const ch=Chart.getChart(this);if(ch){const r=this.getBoundingClientRect();const t=e.touches[0];const pts=ch.getElementsAtEventForMode(e,ch.options.interaction.mode,ch.options.interaction,false);if(!pts.length){ch.tooltip.setActiveElements([],{});ch.update();}}},{passive:true});});
 
 // Weekly chart with projections
 const wkLabels=wks.map((_,i)=>'Wk '+(i+1));
@@ -304,7 +306,7 @@ new Chart(document.getElementById('timeChart'),{
     tooltip:{callbacks:{label:ctx=>fm(ctx.raw)+' avg likes ('+timeCounts[ctx.dataIndex]+' streams)'}}},
     scales:{
       x:{ticks:{callback:v=>fm(v),font:{size:10}},grid:{color:'rgba(74,56,40,.3)'}},
-      y:{grid:{display:false},ticks:{font:{size:11,weight:'600',family:'Inter'},color:'var(--cream)'}}
+      y:{grid:{display:false},ticks:{font:{size:11,weight:'600',family:'Inter'},color:'#F5E6D8'}}
     }}
 });
 
