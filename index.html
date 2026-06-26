@@ -270,6 +270,25 @@ document.getElementById('insights').innerHTML=`
   <div class="insight"><div class="ico">&#128200;</div><div class="itxt">Hours are down 78% since Week 2, but <strong>likes per hour ${effChange>0?'up':'shifted'} ${Math.abs(effChange)}%</strong>. Less grinding, smarter streaming. Best efficiency: <strong>${fm(bestEffLph)} likes/hr</strong> on ${bestEffStream.d}.</div></div>
 `;
 
+// ── Data prep (needed by charts + calendar) ──
+const dayStats={};
+S.forEach(x=>{
+  const dt=td(x.d);const key=dt.getMonth()+'-'+dt.getDate();
+  if(!dayStats[key])dayStats[key]={hrs:0,lk:0,streams:[],date:dt};
+  const mins=dm(x.s,x.e);
+  dayStats[key].hrs+=mins/60;
+  dayStats[key].lk+=x.lk;
+  if(x.lk>0)dayStats[key].streams.push({s:x.s,e:x.e,lk:x.lk,hrs:+(mins/60).toFixed(1)});
+});
+const liveDays=new Set(Object.keys(dayStats));
+const sortDates=[...new Set(S.map(x=>x.d))].map(td).sort((a,b)=>a-b);
+const nowDate=new Date();const todayKey=nowDate.getMonth()+'-'+nowDate.getDate();
+const confirmedOff=new Set();
+for(let d=new Date(sortDates[0]);d<=nowDate;d=new Date(d.getTime()+864e5)){
+  const k=d.getMonth()+'-'+d.getDate();
+  if(!liveDays.has(k))confirmedOff.add(k);
+}
+
 // ── Charts ──
 Chart.defaults.color='#9C8474';
 Chart.defaults.borderColor='#362820';
@@ -391,30 +410,6 @@ new Chart(document.getElementById('timeChart'),{
       y:{grid:{display:false},ticks:{font:{size:11,weight:'600',family:'Inter'},color:'#F5E6D8'}}
     }}
 });
-
-// ── Calendar ──
-
-// Build per-day actual data: hours, likes, stream details
-const dayStats={};
-S.forEach(x=>{
-  const dt=td(x.d);const key=dt.getMonth()+'-'+dt.getDate();
-  if(!dayStats[key])dayStats[key]={hrs:0,lk:0,streams:[],date:dt};
-  const mins=dm(x.s,x.e);
-  dayStats[key].hrs+=mins/60;
-  dayStats[key].lk+=x.lk;
-  if(x.lk>0)dayStats[key].streams.push({s:x.s,e:x.e,lk:x.lk,hrs:+(mins/60).toFixed(1)});
-});
-
-const liveDays=new Set(Object.keys(dayStats));
-const sortDates=[...new Set(S.map(x=>x.d))].map(td).sort((a,b)=>a-b);
-
-// All days in the range (May 26 – today) with no stream = confirmed rest days
-const confirmedOff=new Set();
-const nowDate=new Date();const todayKey=nowDate.getMonth()+'-'+nowDate.getDate();
-for(let d=new Date(sortDates[0]);d<=nowDate;d=new Date(d.getTime()+864e5)){
-  const k=d.getMonth()+'-'+d.getDate();
-  if(!liveDays.has(k))confirmedOff.add(k);
-}
 
 // ── Projection Model ──
 // Philosophy: he's trying to go live EVERY day. He misses 1-2 per week because life.
