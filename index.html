@@ -316,31 +316,51 @@ const liveDays=new Set();
   const dt=td(ds);liveDays.add(dt.getMonth()+'-'+dt.getDate());
 });
 
-// Smart projection: day-of-week scores + declining frequency
-const dowScore={};
-DOW.forEach((d,i)=>{dowScore[i]=dowData[d].ct;});
-// Recent gap analysis (last 6 stream dates)
+// Smart projection based on weekly frequency trend + day-of-week preference
 const sortDates=[...new Set(S.map(x=>x.d))].map(td).sort((a,b)=>a-b);
+
+// Day-of-week frequency scores (0=Sun..6=Sat)
+const dowFreq=[0,0,0,0,0,0,0];
+sortDates.forEach(d=>{dowFreq[d.getDay()]++;});
+const dowTotal=sortDates.length;
+// Rank days by frequency, highest first
+const dowRank=[0,1,2,3,4,5,6].sort((a,b)=>dowFreq[b]-dowFreq[a]);
+
+// Weekly days-active trend: 5,7,4,3,2 → declining
+// Project forward: wk6 ~2 days, wk7 ~2, wk8 ~1, wk9 ~1
+const projDaysPerWk=[2,2,1,1];
+
+// For each projected week, pick the N most-likely days of the week
+const projDays=new Set();
+const lastStream=sortDates[sortDates.length-1];
+// Week 6 starts at day offset from May 26 (wk0 start)
+const wk0=new Date(2026,4,26);
+for(let wi=0;wi<projDaysPerWk.length;wi++){
+  const wkNum=wks.length+wi; // actual week number (5,6,7,8)
+  const wkStart=new Date(wk0.getTime()+wkNum*7*864e5);
+  const numDays=projDaysPerWk[wi];
+  // Pick top-ranked days of week that fall in this week and are in the future
+  let placed=0;
+  for(let ri=0;ri<dowRank.length&&placed<numDays;ri++){
+    const targetDow=dowRank[ri];
+    // Find the date in this week that has this day-of-week
+    const wkStartDow=wkStart.getDay();
+    let offset=(targetDow-wkStartDow+7)%7;
+    const candidate=new Date(wkStart.getTime()+offset*864e5);
+    // Only project future dates that aren't already actual stream days
+    const ck=candidate.getMonth()+'-'+candidate.getDate();
+    if(candidate>lastStream&&!liveDays.has(ck)&&candidate.getMonth()<=7){
+      projDays.add(ck);
+      placed++;
+    }
+  }
+}
+
+// Avg recent gap for prediction text
 const recentDates=sortDates.slice(-6);
 const recentGaps=[];
 for(let i=1;i<recentDates.length;i++)recentGaps.push((recentDates[i]-recentDates[i-1])/864e5);
 const avgRecentGap=recentGaps.reduce((a,b)=>a+b,0)/recentGaps.length;
-
-// Project: use recent avg gap (~2.5 days), favor high-score days, avoid Thursday
-const projDays=new Set();
-let cursor=new Date(sortDates[sortDates.length-1]);
-let gap=Math.round(avgRecentGap);
-for(let i=0;i<12;i++){
-  cursor=new Date(cursor.getTime()+gap*864e5);
-  const dow=cursor.getDay();
-  // Skip Thursday (score=1), adjust to next day
-  if(dow===4){cursor=new Date(cursor.getTime()+864e5);}
-  if(cursor.getMonth()<=7){
-    projDays.add(cursor.getMonth()+'-'+cursor.getDate());
-  }
-  // Gradually increase gap (slowing down)
-  if(i>4)gap=Math.min(gap+1,4);
-}
 
 function buildCal(month,year,label){
   const dim=new Date(year,month+1,0).getDate();
@@ -365,6 +385,7 @@ function buildCal(month,year,label){
 }
 
 document.getElementById('calWrap').innerHTML=
+  buildCal(4,2026,'May')+
   buildCal(5,2026,'June')+
   buildCal(6,2026,'July (projected)')+
   `<div class="cal-legend"><span class="cl-live">Went live</span><span class="cl-proj">Likely to go live</span></div>`;
