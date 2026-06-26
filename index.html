@@ -350,10 +350,10 @@ S.forEach(x=>{
 const liveDays=new Set(Object.keys(dayStats));
 const sortDates=[...new Set(S.map(x=>x.d))].map(td).sort((a,b)=>a-b);
 
-// Days between last stream and today with no data = confirmed off days
+// All days in the range (May 26 – today) with no stream = confirmed rest days
 const confirmedOff=new Set();
 const nowDate=new Date();const todayKey=nowDate.getMonth()+'-'+nowDate.getDate();
-for(let d=new Date(sortDates[sortDates.length-1].getTime()+864e5);d<=nowDate;d=new Date(d.getTime()+864e5)){
+for(let d=new Date(sortDates[0]);d<=nowDate;d=new Date(d.getTime()+864e5)){
   const k=d.getMonth()+'-'+d.getDate();
   if(!liveDays.has(k))confirmedOff.add(k);
 }
@@ -422,7 +422,8 @@ while(wkCursor<projEnd){
   // Sort by miss rate descending — top 2 become rest days
   // Rotate: shift the rest selection by weekIdx so it varies week to week
   daysThisWk.sort((a,b)=>b.miss-a.miss);
-  const numRest=Math.min(2,Math.max(1,daysThisWk.length-4));
+  // For partial weeks (<=3 days), rest 0-1 days. Full weeks rest 2.
+  const numRest=daysThisWk.length<=2?0:daysThisWk.length<=4?1:2;
   // Rotate which high-miss days get picked as rest
   const restPool=daysThisWk.slice(0,Math.min(4,daysThisWk.length));
   const picked=new Set();
@@ -461,17 +462,19 @@ function buildCal(month,year,label){
     const key=month+'-'+d;
     const isLive=liveDays.has(key);
     const isProj=projDays.has(key);
-    const isRest=restDays.has(key);
+    const isFutureRest=restDays.has(key);
+    const isPastRest=confirmedOff.has(key);
     const isToday=key===today;
-    // Only show proj/rest for future or post-range dates
     const dt=new Date(year,month,d);
     const isFuture=dt>rangeEnd;
+    const inRange=dt>=rangeStart;
     let cls='cd';
     if(isLive)cls+=' live';
     else if(isFuture&&isProj)cls+=' proj';
-    else if(isFuture&&isRest)cls+=' rest';
+    else if(isFuture&&isFutureRest)cls+=' rest';
+    else if(inRange&&isPastRest)cls+=' rest';
     if(isToday)cls+=' today';
-    const hasData=isLive||isProj;
+    const hasData=isLive||(isFuture&&isProj);
     h+=`<div class="${cls}" ${hasData?'data-key="'+key+'"':''}>${d}</div>`;
   }
   h+=`</div></div>`;
