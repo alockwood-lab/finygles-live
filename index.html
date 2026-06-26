@@ -346,7 +346,7 @@ function buildCal(month,year,label){
   let h=`<div class="cal-card"><div class="cal-title">${label}</div><div class="cal-grid">`;
   ['S','M','T','W','T','F','S'].forEach(d=>{h+=`<div class="cal-hd">${d}</div>`;});
   for(let i=0;i<sd;i++)h+=`<div class="cd empty">.</div>`;
-  const today=5+'-'+25; // Jun 25
+  const now=new Date();const today=now.getMonth()+'-'+now.getDate();
   for(let d=1;d<=dim;d++){
     const key=month+'-'+d;
     const isLive=liveDays.has(key);
