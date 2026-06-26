@@ -323,44 +323,61 @@ const liveDays=new Set();
   const dt=td(ds);liveDays.add(dt.getMonth()+'-'+dt.getDate());
 });
 
-// Smart projection based on weekly frequency trend + day-of-week preference
+// Projection: based on actual streaming rate + day-of-week probability
 const sortDates=[...new Set(S.map(x=>x.d))].map(td).sort((a,b)=>a-b);
 
-// Day-of-week frequency scores (0=Sun..6=Sat)
-const dowFreq=[0,0,0,0,0,0,0];
-sortDates.forEach(d=>{dowFreq[d.getDay()]++;});
-const dowTotal=sortDates.length;
-// Rank days by frequency, highest first
-const dowRank=[0,1,2,3,4,5,6].sort((a,b)=>dowFreq[b]-dowFreq[a]);
+// Day-of-week probability — how often does he go live on each day?
+// Count weeks where each DOW existed in the date range, and how many he streamed
+const dowProb=[0,0,0,0,0,0,0];
+const dowAppear=[0,0,0,0,0,0,0];
+const rangeStart=sortDates[0];
+const rangeEnd=sortDates[sortDates.length-1];
+const streamDowSet=new Set(sortDates.map(d=>d.getTime()));
+for(let d=new Date(rangeStart);d<=rangeEnd;d=new Date(d.getTime()+864e5)){
+  dowAppear[d.getDay()]++;
+  if(streamDowSet.has(d.getTime()))dowProb[d.getDay()]++;
+}
+// Probability of going live on each DOW
+const dowRate=dowProb.map((ct,i)=>dowAppear[i]?ct/dowAppear[i]:0);
+// Overall rate: 21 unique dates in 30 days = 70%
+const overallRate=sortDates.length/((rangeEnd-rangeStart)/864e5+1);
 
-// Weekly days-active trend: 5,7,4,3,2 → declining
-// Project forward: wk6 ~2 days, wk7 ~2, wk8 ~1, wk9 ~1
-const projDaysPerWk=[2,2,1,1];
-
-// For each projected week, pick the N most-likely days of the week
+// Project: for each future day through end of July,
+// mark as projected if DOW probability >= 50% (he streams on that day more often than not)
+// Then for lower-probability days, include if overall weekly count would be too low
 const projDays=new Set();
 const lastStream=sortDates[sortDates.length-1];
-// Week 6 starts at day offset from May 26 (wk0 start)
-const wk0=new Date(2026,4,26);
-for(let wi=0;wi<projDaysPerWk.length;wi++){
-  const wkNum=wks.length+wi; // actual week number (5,6,7,8)
-  const wkStart=new Date(wk0.getTime()+wkNum*7*864e5);
-  const numDays=projDaysPerWk[wi];
-  // Pick top-ranked days of week that fall in this week and are in the future
-  let placed=0;
-  for(let ri=0;ri<dowRank.length&&placed<numDays;ri++){
-    const targetDow=dowRank[ri];
-    // Find the date in this week that has this day-of-week
-    const wkStartDow=wkStart.getDay();
-    let offset=(targetDow-wkStartDow+7)%7;
-    const candidate=new Date(wkStart.getTime()+offset*864e5);
-    // Only project future dates that aren't already actual stream days
-    const ck=candidate.getMonth()+'-'+candidate.getDate();
-    if(candidate>lastStream&&!liveDays.has(ck)&&candidate.getMonth()<=7){
-      projDays.add(ck);
-      placed++;
-    }
+const projEnd=new Date(2026,7,0); // end of July
+
+// Rank DOWs by probability
+const dowRank=[0,1,2,3,4,5,6].sort((a,b)=>dowRate[b]-dowRate[a]);
+
+// Walk each week from lastStream through July
+const wkStartDate=new Date(lastStream.getTime()+864e5);
+let weekCursor=new Date(wkStartDate);
+// Find start of the week containing weekCursor (Sunday)
+weekCursor=new Date(weekCursor.getTime()-weekCursor.getDay()*864e5);
+
+while(weekCursor<projEnd){
+  // For each day of this week
+  let weekProj=[];
+  for(let dow=0;dow<7;dow++){
+    const dayDate=new Date(weekCursor.getTime()+dow*864e5);
+    if(dayDate<=lastStream||dayDate>projEnd)continue;
+    const key=dayDate.getMonth()+'-'+dayDate.getDate();
+    if(liveDays.has(key))continue;
+    weekProj.push({date:dayDate,key,rate:dowRate[dow],dow});
   }
+  // Sort by probability, take top days to match ~4-5 per week (his actual pace)
+  // Use overall rate to determine how many: rate * available days this week
+  weekProj.sort((a,b)=>b.rate-a.rate);
+  const targetDays=Math.round(weekProj.length*overallRate);
+  const take=Math.max(targetDays,Math.min(3,weekProj.length));
+  for(let i=0;i<take;i++){
+    projDays.add(weekProj[i].key);
+  }
+  // Next week
+  weekCursor=new Date(weekCursor.getTime()+7*864e5);
 }
 
 // Avg recent gap for prediction text
