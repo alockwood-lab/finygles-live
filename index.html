@@ -2,60 +2,75 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Finaygle's Live</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#1C1210;--card:#2A1E19;--card2:#362820;--border:#4A3828;
-  --orange:#E8763A;--bright:#FF8F4F;--glow:rgba(232,118,58,.15);--dim:#B8613A;
+  --orange:#E8763A;--bright:#FF8F4F;--glow:rgba(232,118,58,.12);--dim:#B8613A;
   --cream:#F5E6D8;--muted:#9C8474;--white:#FFF5EE;
   --green:#6BCB77;--red:#FF6B6B;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--cream);-webkit-font-smoothing:antialiased;}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--cream);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;}
 
-.header{background:linear-gradient(180deg,#3D2218 0%,var(--bg) 100%);padding:28px 20px 12px;text-align:center;}
-.header h1{font-size:28px;font-weight:900;color:var(--bright);letter-spacing:-1px;}
+.header{background:linear-gradient(180deg,#3D2218 0%,var(--bg) 100%);padding:32px 20px 12px;text-align:center;}
+.header h1{font-size:30px;font-weight:900;color:var(--bright);letter-spacing:-1px;}
 .header .sub{font-size:13px;color:var(--muted);margin-top:4px;}
 
 .page{max-width:480px;margin:0 auto;padding:0 16px 40px;}
 
-.big-stat{text-align:center;padding:20px 16px 8px;}
-.big-stat .number{font-size:52px;font-weight:900;color:var(--bright);line-height:1;letter-spacing:-2px;}
-.big-stat .label{font-size:13px;color:var(--muted);margin-top:6px;}
+.hero{text-align:center;padding:24px 16px 16px;}
+.hero .num{font-size:48px;font-weight:900;color:var(--bright);line-height:1;letter-spacing:-2px;}
+.hero .lbl{font-size:13px;color:var(--muted);margin-top:6px;}
 
-.stat-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
-.stat-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;text-align:center;}
-.stat-card .val{font-size:22px;font-weight:800;color:var(--white);}
-.stat-card .val.up{color:var(--green);}
-.stat-card .val.fire{color:var(--bright);}
-.stat-card .lbl{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.4;}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px 16px;text-align:center;}
+.stat .v{font-size:22px;font-weight:800;color:var(--white);}
+.stat .v.up{color:var(--green);}
+.stat .v.hot{color:var(--bright);}
+.stat .l{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.4;}
 
-.section{margin-top:24px;margin-bottom:10px;}
-.section-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--dim);padding-left:4px;}
+.streak{background:linear-gradient(135deg,#3D2218,#4A2E1E);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:16px;text-align:center;}
+.streak .emoji{font-size:32px;}
+.streak .stxt{font-size:22px;font-weight:900;color:var(--bright);margin-top:4px;}
+.streak .ssub{font-size:12px;color:var(--muted);margin-top:4px;}
 
-.chart-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px;}
-.chart-card h3{font-size:15px;font-weight:700;color:var(--white);margin-bottom:2px;}
-.chart-card .csub{font-size:12px;color:var(--muted);margin-bottom:14px;}
-.chart-wrap{position:relative;height:220px;}
-
-.cal{margin-bottom:12px;}
-.cal-month{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:10px;}
-.cal-month h4{font-size:14px;font-weight:700;color:var(--white);margin-bottom:10px;text-align:center;}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;}
-.cal-head{font-size:10px;font-weight:700;color:var(--muted);padding:4px 0;}
-.cal-day{font-size:12px;padding:8px 2px;border-radius:8px;font-weight:600;color:var(--muted);}
-.cal-day.live{background:var(--orange);color:#fff;}
-.cal-day.proj{background:rgba(255,143,79,.2);color:var(--bright);border:1px dashed var(--bright);}
-.cal-day.empty{color:transparent;}
-.cal-day.today{box-shadow:0 0 0 2px var(--white);}
-
-.insight{background:linear-gradient(135deg,#3D2218,#4A2E1E);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:12px;text-align:center;}
-.insight .itxt{font-size:14px;color:var(--cream);line-height:1.6;}
+.insights{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;}
+.insight{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start;}
+.insight .ico{font-size:22px;flex-shrink:0;margin-top:2px;}
+.insight .itxt{font-size:13px;color:var(--cream);line-height:1.5;}
 .insight .itxt strong{color:var(--bright);}
-.insight .emoji{font-size:28px;margin-bottom:6px;}
+.insight .itxt .dim{color:var(--muted);}
+
+.sec{margin-top:20px;margin-bottom:10px;}
+.sec-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.8px;color:var(--dim);padding-left:4px;}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px;}
+.card h3{font-size:15px;font-weight:700;color:var(--white);margin-bottom:2px;}
+.card .csub{font-size:12px;color:var(--muted);margin-bottom:14px;}
+.cwrap{position:relative;height:230px;}
+
+.cal-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px;}
+.cal-title{font-size:14px;font-weight:800;color:var(--white);text-align:center;margin-bottom:8px;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center;}
+.cal-hd{font-size:10px;font-weight:700;color:var(--muted);padding:4px 0;}
+.cd{font-size:12px;padding:7px 2px;border-radius:8px;font-weight:600;color:#5A4A3E;}
+.cd.live{background:var(--orange);color:#fff;}
+.cd.proj{background:rgba(255,143,79,.15);color:var(--bright);border:1.5px dashed rgba(255,143,79,.4);}
+.cd.today{box-shadow:inset 0 0 0 2px var(--white);}
+.cd.empty{visibility:hidden;}
+.cal-legend{display:flex;gap:16px;justify-content:center;margin-top:10px;font-size:11px;color:var(--muted);}
+.cal-legend span::before{content:'';display:inline-block;width:10px;height:10px;border-radius:4px;margin-right:4px;vertical-align:middle;}
+.cal-legend .cl-live::before{background:var(--orange);}
+.cal-legend .cl-proj::before{background:rgba(255,143,79,.15);border:1.5px dashed rgba(255,143,79,.4);}
+
+.predict{background:linear-gradient(135deg,#3D2218,#4A2E1E);border:1px solid var(--border);border-radius:16px;padding:18px;margin-top:12px;text-align:center;}
+.predict .emoji{font-size:28px;}
+.predict .ptxt{font-size:14px;color:var(--cream);line-height:1.6;margin-top:6px;}
+.predict .ptxt strong{color:var(--bright);}
 
 .footer{text-align:center;padding:20px 16px;font-size:11px;color:#4A3828;margin-top:16px;}
 </style>
@@ -64,216 +79,300 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--c
 
 <div class="header">
   <h1>Finaygle's Live</h1>
-  <div class="sub">TikTok LIVE &middot; May 26 – Jun 24</div>
+  <div class="sub">TikTok LIVE Analytics &middot; May 26 – Jun 24</div>
 </div>
 
 <div class="page">
 
-<div class="big-stat">
-  <div class="number" id="totalLikes"></div>
-  <div class="label">total likes across all streams</div>
+<div class="hero">
+  <div class="num" id="heroNum"></div>
+  <div class="lbl">total likes earned</div>
 </div>
 
-<div class="stat-row" id="stats"></div>
-<div class="stat-row" id="stats2"></div>
+<div class="stats" id="row1"></div>
+<div class="stats" id="row2"></div>
 
-<div class="insight" id="streakBox"></div>
+<div class="streak" id="streakBox"></div>
 
-<div class="section"><div class="section-label">Time Spent Live vs Likes</div></div>
-<div class="chart-card">
-  <h3>Hours Live &amp; Likes by Week</h3>
-  <div class="csub">More time live = more likes. The bars show hours, the line shows likes.</div>
-  <div class="chart-wrap" style="height:240px;"><canvas id="weeklyChart"></canvas></div>
+<div class="insights" id="insights"></div>
+
+<div class="sec"><div class="sec-label">Weekly Trend</div></div>
+<div class="card">
+  <h3>Hours Live vs Likes Earned</h3>
+  <div class="csub">Bars = hours streamed, line = total likes. Weeks 6-7 projected.</div>
+  <div class="cwrap" style="height:250px;"><canvas id="weeklyChart"></canvas></div>
 </div>
 
-<div class="section"><div class="section-label">When to Catch the Next Stream</div></div>
-<div class="cal" id="calendar"></div>
+<div class="sec"><div class="sec-label">When the Likes Hit</div></div>
+<div class="card">
+  <h3>Likes by Start Time</h3>
+  <div class="csub">Streams starting late night pull the biggest numbers.</div>
+  <div class="cwrap"><canvas id="timeChart"></canvas></div>
+</div>
 
-<div class="insight" id="nextLive"></div>
+<div class="sec"><div class="sec-label">Stream Calendar</div></div>
+<div id="calWrap"></div>
+
+<div class="predict" id="predict"></div>
 
 </div>
 
-<div class="footer">Finaygle's Live &middot; Stream Dashboard</div>
+<div class="footer">Finaygle's Live &middot; built with love</div>
 
 <script>
-const STREAMS = [
-  {date:'May 26',start:'1:27 PM',end:'4:50 PM',likes:594},
-  {date:'May 26',start:'5:03 PM',end:'8:46 PM',likes:20500},
-  {date:'May 26',start:'8:48 PM',end:'11:25 PM',likes:2932},
-  {date:'May 27',start:'1:11 AM',end:'1:11 AM',likes:0},
-  {date:'May 27',start:'1:17 AM',end:'1:58 AM',likes:253},
-  {date:'May 27',start:'1:59 AM',end:'5:38 AM',likes:12500},
-  {date:'May 27',start:'5:40 AM',end:'12:48 PM',likes:51400},
-  {date:'May 27',start:'12:52 PM',end:'1:58 PM',likes:952},
-  {date:'May 27',start:'9:20 PM',end:'7:14 AM',likes:50100},
-  {date:'May 28',start:'8:23 PM',end:'10:28 PM',likes:2922},
-  {date:'May 28',start:'10:29 PM',end:'10:31 PM',likes:0},
-  {date:'May 31',start:'11:22 PM',end:'5:28 AM',likes:5843},
-  {date:'Jun 1',start:'7:52 PM',end:'7:04 AM',likes:14200},
-  {date:'Jun 2',start:'8:21 PM',end:'6:00 AM',likes:14100},
-  {date:'Jun 3',start:'7:22 PM',end:'7:23 PM',likes:0},
-  {date:'Jun 3',start:'7:24 PM',end:'11:49 PM',likes:23600},
-  {date:'Jun 4',start:'12:10 AM',end:'12:06 PM',likes:43800},
-  {date:'Jun 4',start:'9:01 PM',end:'3:10 AM',likes:21500},
-  {date:'Jun 5',start:'7:45 PM',end:'11:45 PM',likes:4612},
-  {date:'Jun 5',start:'11:45 PM',end:'8:41 AM',likes:32500},
-  {date:'Jun 6',start:'8:13 PM',end:'6:26 AM',likes:31900},
-  {date:'Jun 7',start:'7:18 PM',end:'6:37 AM',likes:33900},
-  {date:'Jun 8',start:'6:40 AM',end:'11:39 AM',likes:11500},
-  {date:'Jun 8',start:'8:46 PM',end:'5:41 AM',likes:9285},
-  {date:'Jun 9',start:'8:04 PM',end:'10:26 AM',likes:16500},
-  {date:'Jun 11',start:'9:08 PM',end:'5:13 AM',likes:26800},
-  {date:'Jun 14',start:'10:28 PM',end:'3:34 AM',likes:20500},
-  {date:'Jun 15',start:'11:22 PM',end:'3:51 AM',likes:10300},
-  {date:'Jun 17',start:'9:52 PM',end:'4:43 PM',likes:53400},
-  {date:'Jun 18',start:'8:55 PM',end:'5:03 AM',likes:12700},
-  {date:'Jun 20',start:'12:13 AM',end:'4:00 AM',likes:37400},
-  {date:'Jun 23',start:'6:56 PM',end:'11:39 PM',likes:18200},
-  {date:'Jun 23',start:'11:45 PM',end:'4:39 AM',likes:32600},
-  {date:'Jun 24',start:'9:54 PM',end:'6:02 AM',likes:13600},
+const S = [
+  {d:'May 26',s:'1:27 PM',e:'4:50 PM',lk:594},
+  {d:'May 26',s:'5:03 PM',e:'8:46 PM',lk:20500},
+  {d:'May 26',s:'8:48 PM',e:'11:25 PM',lk:2932},
+  {d:'May 27',s:'1:11 AM',e:'1:11 AM',lk:0},
+  {d:'May 27',s:'1:17 AM',e:'1:58 AM',lk:253},
+  {d:'May 27',s:'1:59 AM',e:'5:38 AM',lk:12500},
+  {d:'May 27',s:'5:40 AM',e:'12:48 PM',lk:51400},
+  {d:'May 27',s:'12:52 PM',e:'1:58 PM',lk:952},
+  {d:'May 27',s:'9:20 PM',e:'7:14 AM',lk:50100},
+  {d:'May 28',s:'8:23 PM',e:'10:28 PM',lk:2922},
+  {d:'May 28',s:'10:29 PM',e:'10:31 PM',lk:0},
+  {d:'May 31',s:'11:22 PM',e:'5:28 AM',lk:5843},
+  {d:'Jun 1',s:'7:52 PM',e:'7:04 AM',lk:14200},
+  {d:'Jun 2',s:'8:21 PM',e:'6:00 AM',lk:14100},
+  {d:'Jun 3',s:'7:22 PM',e:'7:23 PM',lk:0},
+  {d:'Jun 3',s:'7:24 PM',e:'11:49 PM',lk:23600},
+  {d:'Jun 4',s:'12:10 AM',e:'12:06 PM',lk:43800},
+  {d:'Jun 4',s:'9:01 PM',e:'3:10 AM',lk:21500},
+  {d:'Jun 5',s:'7:45 PM',e:'11:45 PM',lk:4612},
+  {d:'Jun 5',s:'11:45 PM',e:'8:41 AM',lk:32500},
+  {d:'Jun 6',s:'8:13 PM',e:'6:26 AM',lk:31900},
+  {d:'Jun 7',s:'7:18 PM',e:'6:37 AM',lk:33900},
+  {d:'Jun 8',s:'6:40 AM',e:'11:39 AM',lk:11500},
+  {d:'Jun 8',s:'8:46 PM',e:'5:41 AM',lk:9285},
+  {d:'Jun 9',s:'8:04 PM',e:'10:26 AM',lk:16500},
+  {d:'Jun 11',s:'9:08 PM',e:'5:13 AM',lk:26800},
+  {d:'Jun 14',s:'10:28 PM',e:'3:34 AM',lk:20500},
+  {d:'Jun 15',s:'11:22 PM',e:'3:51 AM',lk:10300},
+  {d:'Jun 17',s:'9:52 PM',e:'4:43 PM',lk:53400},
+  {d:'Jun 18',s:'8:55 PM',e:'5:03 AM',lk:12700},
+  {d:'Jun 20',s:'12:13 AM',e:'4:00 AM',lk:37400},
+  {d:'Jun 23',s:'6:56 PM',e:'11:39 PM',lk:18200},
+  {d:'Jun 23',s:'11:45 PM',e:'4:39 AM',lk:32600},
+  {d:'Jun 24',s:'9:54 PM',e:'6:02 AM',lk:13600},
 ];
 
-function parseTime(t){const m=t.match(/(\d+):(\d+)\s*(AM|PM)/i);if(!m)return 0;let h=+m[1],min=+m[2];if(m[3].toUpperCase()==='PM'&&h!==12)h+=12;if(m[3].toUpperCase()==='AM'&&h===12)h=0;return h*60+min;}
-function durMins(s,e){let sm=parseTime(s),em=parseTime(e);if(em<=sm)em+=24*60;return em-sm;}
-function fk(n){if(n>=1000000)return(n/1000000).toFixed(1)+'M';if(n>=1000)return(n/1000).toFixed(1)+'K';return n.toLocaleString();}
-function toDate(ds){const p=ds.split(' ');return new Date(2025,p[0]==='May'?4:5,+p[1]);}
+function pt(t){const m=t.match(/(\d+):(\d+)\s*(AM|PM)/i);let h=+m[1],mm=+m[2];if(m[3]==='PM'&&h!==12)h+=12;if(m[3]==='AM'&&h===12)h=0;return h*60+mm;}
+function dm(a,b){let x=pt(a),y=pt(b);if(y<=x)y+=1440;return y-x;}
+function td(ds){const p=ds.split(' ');return new Date(2025,p[0]==='May'?4:5,+p[1]);}
+function fm(n){return n.toLocaleString();}
+const DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug'];
 
-// Totals
-const totalLikes=STREAMS.reduce((s,d)=>s+d.likes,0);
-const totalMins=STREAMS.reduce((s,d)=>s+durMins(d.start,d.end),0);
-const totalHrs=(totalMins/60).toFixed(0);
-document.getElementById('totalLikes').textContent=fk(totalLikes);
+const real=S.filter(x=>x.lk>0);
+const totalLikes=S.reduce((a,x)=>a+x.lk,0);
+const totalMins=S.reduce((a,x)=>a+dm(x.s,x.e),0);
+const totalHrs=Math.round(totalMins/60);
+const likesPerHr=Math.round(totalLikes/(totalMins/60));
 
-// Best time analysis
-const brackets=[
-  {name:'Evening',range:'7 PM – 11 PM',min:19*60,max:23*60,likes:0,count:0},
-  {name:'Late Night',range:'11 PM – 3 AM',min:23*60,max:27*60,likes:0,count:0},
-  {name:'Overnight',range:'3 AM – 9 AM',min:3*60,max:9*60,likes:0,count:0},
-  {name:'Daytime',range:'9 AM – 7 PM',min:9*60,max:19*60,likes:0,count:0},
-];
-STREAMS.filter(s=>s.likes>0).forEach(s=>{
-  const t=parseTime(s.start);
-  brackets.forEach(b=>{
-    const lo=b.min%1440, hi=b.max%1440;
-    if(b.max>1440){if(t>=lo||t<hi){b.likes+=s.likes;b.count++;}}
-    else{if(t>=lo&&t<hi){b.likes+=s.likes;b.count++;}}
-  });
-});
-const bestBracket=brackets.filter(b=>b.count>0).sort((a,b)=>(b.likes/b.count)-(a.likes/a.count))[0];
+// Monthly
+const mayLk=S.filter(x=>x.d.startsWith('May')).reduce((a,x)=>a+x.lk,0);
+const junLk=S.filter(x=>x.d.startsWith('Jun')).reduce((a,x)=>a+x.lk,0);
+const momGr=Math.round((junLk-mayLk)/mayLk*100);
 
-// Longest streak
-const streamDates=[...new Set(STREAMS.map(s=>s.date))].map(toDate).sort((a,b)=>a-b);
-let maxStreak=1,curStreak=1,streakStart=streamDates[0],streakEnd=streamDates[0],bestStreakStart=streamDates[0],bestStreakEnd=streamDates[0];
-for(let i=1;i<streamDates.length;i++){
-  const diff=(streamDates[i]-streamDates[i-1])/(24*60*60*1000);
-  if(diff===1){curStreak++;streakEnd=streamDates[i];if(curStreak>maxStreak){maxStreak=curStreak;bestStreakStart=streakStart;bestStreakEnd=streakEnd;}}
-  else{curStreak=1;streakStart=streamDates[i];streakEnd=streamDates[i];}
-}
-const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug'];
-const streakStartStr=months[bestStreakStart.getMonth()]+' '+bestStreakStart.getDate();
-const streakEndStr=months[bestStreakEnd.getMonth()]+' '+bestStreakEnd.getDate();
+// Hero
+document.getElementById('heroNum').textContent=fm(totalLikes);
 
 // Stats
-const realStreams=STREAMS.filter(s=>s.likes>0);
-const avgPerStream=Math.round(totalLikes/realStreams.length);
-const mayLikes=STREAMS.filter(s=>s.date.startsWith('May')).reduce((a,b)=>a+b.likes,0);
-const junLikes=STREAMS.filter(s=>s.date.startsWith('Jun')).reduce((a,b)=>a+b.likes,0);
-const momGrowth=mayLikes>0?((junLikes-mayLikes)/mayLikes):0;
+document.getElementById('row1').innerHTML=`
+  <div class="stat"><div class="v">${fm(totalHrs)}h</div><div class="l">hours live</div></div>
+  <div class="stat"><div class="v">${fm(likesPerHr)}</div><div class="l">likes per hour</div></div>`;
+document.getElementById('row2').innerHTML=`
+  <div class="stat"><div class="v up">+${momGr}%</div><div class="l">June vs May</div></div>
+  <div class="stat"><div class="v">${real.length}</div><div class="l">streams with engagement</div></div>`;
 
-document.getElementById('stats').innerHTML=`
-  <div class="stat-card"><div class="val">${totalHrs}h</div><div class="lbl">total hours live</div></div>
-  <div class="stat-card"><div class="val">${fk(avgPerStream)}</div><div class="lbl">avg likes per stream</div></div>
-`;
-document.getElementById('stats2').innerHTML=`
-  <div class="stat-card"><div class="val up">+${Math.round(momGrowth*100)}%</div><div class="lbl">June vs May growth</div></div>
-  <div class="stat-card"><div class="val fire">${bestBracket.name}</div><div class="lbl">best time to go live<br>${bestBracket.range}</div></div>
-`;
-
+// Streak
+const uDates=[...new Set(S.map(x=>x.d))].map(td).sort((a,b)=>a-b);
+let mx=1,cur=1,ss=uDates[0],se=uDates[0],bs=uDates[0],be=uDates[0];
+for(let i=1;i<uDates.length;i++){
+  if((uDates[i]-uDates[i-1])/(864e5)===1){cur++;se=uDates[i];if(cur>mx){mx=cur;bs=ss;be=se;}}
+  else{cur=1;ss=uDates[i];se=uDates[i];}
+}
 document.getElementById('streakBox').innerHTML=`
-  <div class="emoji">&#128293;&#128293;&#128293;</div>
-  <div class="itxt"><strong>${maxStreak}-day streak!</strong><br>${streakStartStr} – ${streakEndStr}<br>That's ${maxStreak} days in a row going live</div>
+  <div class="emoji">${'&#128293;'.repeat(Math.min(mx,5))}</div>
+  <div class="stxt">${mx}-Day Streak</div>
+  <div class="ssub">${MONTHS[bs.getMonth()]} ${bs.getDate()} – ${MONTHS[be.getMonth()]} ${be.getDate()} &middot; ${mx} straight days live</div>`;
+
+// Day of week analysis
+const dowData={};
+DOW.forEach(d=>{dowData[d]={lk:0,ct:0,hrs:0};});
+[...new Set(S.map(x=>x.d))].forEach(dt=>{
+  const day=DOW[td(dt).getDay()];
+  const streams=S.filter(x=>x.d===dt);
+  dowData[day].lk+=streams.reduce((a,x)=>a+x.lk,0);
+  dowData[day].hrs+=streams.reduce((a,x)=>a+dm(x.s,x.e),0)/60;
+  dowData[day].ct++;
+});
+const bestDow=DOW.filter(d=>dowData[d].ct>0).sort((a,b)=>(dowData[b].lk/dowData[b].ct)-(dowData[a].lk/dowData[a].ct))[0];
+const bestDowAvg=Math.round(dowData[bestDow].lk/dowData[bestDow].ct);
+
+// Time brackets
+const brackets=[
+  {name:'After 9 PM',lo:21,hi:24,lk:0,ct:0},
+  {name:'Late Night (12–6 AM)',lo:0,hi:6,lk:0,ct:0},
+  {name:'Evening (6–9 PM)',lo:18,hi:21,lk:0,ct:0},
+  {name:'Daytime (6 AM–6 PM)',lo:6,hi:18,lk:0,ct:0},
+];
+real.forEach(x=>{
+  const h=Math.floor(pt(x.s)/60);
+  for(const b of brackets){if(h>=b.lo&&h<b.hi){b.lk+=x.lk;b.ct++;break;}}
+});
+const bestTime=brackets.filter(b=>b.ct>0).sort((a,b)=>(b.lk/b.ct)-(a.lk/a.ct))[0];
+const worstTime=brackets.filter(b=>b.ct>=2).sort((a,b)=>(a.lk/a.ct)-(b.lk/b.ct))[0];
+const timeMultiple=(bestTime.lk/bestTime.ct)/(worstTime.lk/worstTime.ct);
+
+// Efficiency trend
+const wkMap={};
+S.forEach(x=>{const w=Math.floor((td(x.d)-new Date(2025,4,26))/(7*864e5));if(!wkMap[w])wkMap[w]={lk:0,hrs:0,days:new Set()};wkMap[w].lk+=x.lk;wkMap[w].hrs+=dm(x.s,x.e)/60;wkMap[w].days.add(x.d);});
+const wks=Object.keys(wkMap).map(Number).sort((a,b)=>a-b);
+const wk2Eff=Math.round(wkMap[1].lk/(wkMap[1].hrs));
+const wk5Eff=Math.round(wkMap[wks[wks.length-1]].lk/(wkMap[wks[wks.length-1]].hrs));
+const effChange=Math.round((wk5Eff-wk2Eff)/wk2Eff*100);
+
+// Best single stream
+const bestStream=real.sort((a,b)=>b.lk-a.lk)[0];
+const bestEffStream=real.filter(x=>dm(x.s,x.e)>120).sort((a,b)=>(b.lk/dm(b.s,b.e))-(a.lk/dm(a.s,a.e)))[0];
+const bestEffLph=Math.round(bestEffStream.lk/(dm(bestEffStream.s,bestEffStream.e)/60));
+
+// Insights
+document.getElementById('insights').innerHTML=`
+  <div class="insight"><div class="ico">&#128171;</div><div class="itxt"><strong>${bestDow}s are the golden day</strong> — averaging ${fm(bestDowAvg)} likes. That's nearly <strong>2x</strong> any other day of the week. <span class="dim">Thursdays? Only went live once ever.</span></div></div>
+  <div class="insight"><div class="ico">&#127769;</div><div class="itxt">Streams starting <strong>${bestTime.name.toLowerCase()}</strong> pull <strong>${timeMultiple.toFixed(1)}x more likes</strong> than daytime. The algorithm favors night owls.</div></div>
+  <div class="insight"><div class="ico">&#128200;</div><div class="itxt">Hours are down 78% since Week 2, but <strong>likes per hour ${effChange>0?'up':'shifted'} ${Math.abs(effChange)}%</strong>. Less grinding, smarter streaming. Best efficiency: <strong>${fm(bestEffLph)} likes/hr</strong> on ${bestEffStream.d}.</div></div>
 `;
 
-// Weekly data: hours + likes
-function weekOf(ds){const dt=toDate(ds);const start=new Date(2025,4,26);return Math.floor((dt-start)/(7*24*60*60*1000));}
-const weekHrs={},weekLikes={};
-STREAMS.forEach(s=>{
-  const w=weekOf(s.date);
-  weekHrs[w]=(weekHrs[w]||0)+durMins(s.start,s.end)/60;
-  weekLikes[w]=(weekLikes[w]||0)+s.likes;
-});
-const wks=Object.keys(weekHrs).map(Number).sort((a,b)=>a-b);
-const wkLabels=wks.map((_,i)=>'Wk '+(i+1));
-const wkHrsData=wks.map(w=>+weekHrs[w].toFixed(1));
-const wkLikesData=wks.map(w=>weekLikes[w]);
-
+// ── Charts ──
 Chart.defaults.color='#9C8474';
 Chart.defaults.borderColor='#362820';
-const touchOpts={interaction:{mode:'nearest',intersect:false},events:['mousemove','mouseout','click','touchstart','touchmove']};
+const touch={interaction:{mode:'nearest',intersect:false},events:['mousemove','mouseout','click','touchstart','touchmove']};
+
+// Weekly chart with projections
+const wkLabels=wks.map((_,i)=>'Wk '+(i+1));
+const wkHrs=wks.map(w=>+wkMap[w].hrs.toFixed(1));
+const wkLk=wks.map(w=>wkMap[w].lk);
+
+// Project wk 6-7 based on declining trend
+const recentHrs=[wkMap[wks[2]].hrs,wkMap[wks[3]].hrs,wkMap[wks[4]].hrs];
+const hrsDecay=recentHrs[2]/recentHrs[0];
+const w6Hrs=+(recentHrs[2]*0.85).toFixed(1);
+const w7Hrs=+(w6Hrs*0.8).toFixed(1);
+const recentLph=[wkMap[wks[2]].lk/wkMap[wks[2]].hrs,wkMap[wks[3]].lk/wkMap[wks[3]].hrs,wkMap[wks[4]].lk/wkMap[wks[4]].hrs];
+const avgLph=(recentLph[0]+recentLph[1]+recentLph[2])/3;
+const w6Lk=Math.round(w6Hrs*avgLph);
+const w7Lk=Math.round(w7Hrs*avgLph);
+
+const allWkLabels=[...wkLabels,'Wk 6','Wk 7'];
+const allHrs=[...wkHrs,w6Hrs,w7Hrs];
+const allLk=[...wkLk,w6Lk,w7Lk];
 
 new Chart(document.getElementById('weeklyChart'),{
   type:'bar',
-  data:{labels:wkLabels,datasets:[
-    {label:'Hours Live',data:wkHrsData,backgroundColor:'rgba(232,118,58,.6)',borderRadius:6,borderSkipped:false,yAxisID:'y',order:2},
-    {label:'Likes',data:wkLikesData,type:'line',borderColor:'#FF8F4F',backgroundColor:'rgba(255,143,79,.1)',pointBackgroundColor:'#FF8F4F',pointRadius:5,pointHoverRadius:8,borderWidth:3,tension:.3,fill:true,yAxisID:'y1',order:1},
+  data:{labels:allWkLabels,datasets:[
+    {label:'Hours Live',data:allHrs,backgroundColor:allHrs.map((_,i)=>i<wks.length?'rgba(232,118,58,.6)':'rgba(232,118,58,.2)'),borderColor:allHrs.map((_,i)=>i<wks.length?'#B8613A':'#B8613A'),borderWidth:allHrs.map((_,i)=>i<wks.length?0:1.5),borderDash:(_,i)=>i>=wks.length?[5,3]:[],borderRadius:6,borderSkipped:false,yAxisID:'y',order:2},
+    {label:'Likes',data:allLk,type:'line',borderColor:'#FF8F4F',backgroundColor:'rgba(255,143,79,.08)',pointBackgroundColor:allLk.map((_,i)=>i<wks.length?'#FF8F4F':'transparent'),pointBorderColor:allLk.map((_,i)=>i<wks.length?'#FF8F4F':'#FF8F4F'),pointRadius:allLk.map((_,i)=>i<wks.length?5:4),pointStyle:allLk.map((_,i)=>i<wks.length?'circle':'rectRot'),borderWidth:3,borderDash:[],segment:{borderDash:ctx=>ctx.p0DataIndex>=wks.length-1?[6,4]:[]},tension:.3,fill:true,yAxisID:'y1',order:1},
   ]},
-  options:{...touchOpts,responsive:true,maintainAspectRatio:false,plugins:{
+  options:{...touch,responsive:true,maintainAspectRatio:false,plugins:{
     legend:{display:true,position:'bottom',labels:{boxWidth:10,padding:12,font:{size:11,family:'Inter'},color:'#9C8474'}},
-    tooltip:{callbacks:{label:ctx=>ctx.dataset.label==='Likes'?fk(ctx.raw)+' likes':ctx.raw+'h live'}}},
+    tooltip:{callbacks:{label:ctx=>ctx.dataset.label==='Likes'?fm(ctx.raw)+' likes'+(ctx.dataIndex>=wks.length?' (projected)':''):ctx.raw+'h'+(ctx.dataIndex>=wks.length?' (projected)':'')}}},
     scales:{
-      x:{grid:{display:false},ticks:{font:{size:12,weight:'bold',family:'Inter'}}},
-      y:{position:'left',title:{display:true,text:'Hours',font:{size:10},color:'#9C8474'},ticks:{font:{size:10},color:'#B8613A'},grid:{color:'rgba(74,56,40,.3)'}},
-      y1:{position:'right',title:{display:true,text:'Likes',font:{size:10},color:'#9C8474'},ticks:{callback:v=>fk(v),font:{size:10},color:'#FF8F4F'},grid:{display:false}}
+      x:{grid:{display:false},ticks:{font:{size:11,weight:'bold',family:'Inter'}}},
+      y:{position:'left',title:{display:true,text:'Hours',font:{size:10},color:'#B8613A'},ticks:{font:{size:10},color:'#B8613A'},grid:{color:'rgba(74,56,40,.3)'}},
+      y1:{position:'right',title:{display:true,text:'Likes',font:{size:10},color:'#FF8F4F'},ticks:{callback:v=>fm(v),font:{size:10},color:'#FF8F4F'},grid:{display:false}}
     }}
 });
 
-// Calendar
-const liveDates=new Set(STREAMS.map(s=>{const p=s.date.split(' ');return(p[0]==='May'?4:5)+'-'+p[1];}));
+// Time of day chart
+const timeData=brackets.filter(b=>b.ct>0).sort((a,b)=>(b.lk/b.ct)-(a.lk/a.ct));
+const timeLabels=timeData.map(b=>b.name);
+const timeAvgs=timeData.map(b=>Math.round(b.lk/b.ct));
+const timeCounts=timeData.map(b=>b.ct);
 
-// Predict next streams: avg gap between stream days
-const sortedDates=[...new Set(STREAMS.map(s=>s.date))].map(toDate).sort((a,b)=>a-b);
-const gaps=[];
-for(let i=1;i<sortedDates.length;i++)gaps.push((sortedDates[i]-sortedDates[i-1])/(24*60*60*1000));
-const avgGap=gaps.reduce((a,b)=>a+b,0)/gaps.length;
-const projDates=new Set();
-let last=sortedDates[sortedDates.length-1];
-for(let i=0;i<15;i++){
-  last=new Date(last.getTime()+Math.round(avgGap)*24*60*60*1000);
-  if(last.getMonth()<=7)projDates.add(last.getMonth()+'-'+last.getDate());
+new Chart(document.getElementById('timeChart'),{
+  type:'bar',
+  data:{labels:timeLabels,datasets:[{
+    data:timeAvgs,
+    backgroundColor:timeAvgs.map((_,i)=>i===0?'rgba(255,143,79,.8)':'rgba(232,118,58,.4)'),
+    borderRadius:8,borderSkipped:false
+  }]},
+  options:{...touch,indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{
+    legend:{display:false},
+    tooltip:{callbacks:{label:ctx=>fm(ctx.raw)+' avg likes ('+timeCounts[ctx.dataIndex]+' streams)'}}},
+    scales:{
+      x:{ticks:{callback:v=>fm(v),font:{size:10}},grid:{color:'rgba(74,56,40,.3)'}},
+      y:{grid:{display:false},ticks:{font:{size:11,weight:'600',family:'Inter'},color:'var(--cream)'}}
+    }}
+});
+
+// ── Calendar ──
+const liveDays=new Set();
+[...new Set(S.map(x=>x.d))].forEach(ds=>{
+  const dt=td(ds);liveDays.add(dt.getMonth()+'-'+dt.getDate());
+});
+
+// Smart projection: day-of-week scores + declining frequency
+const dowScore={};
+DOW.forEach((d,i)=>{dowScore[i]=dowData[d].ct;});
+// Recent gap analysis (last 6 stream dates)
+const sortDates=[...new Set(S.map(x=>x.d))].map(td).sort((a,b)=>a-b);
+const recentDates=sortDates.slice(-6);
+const recentGaps=[];
+for(let i=1;i<recentDates.length;i++)recentGaps.push((recentDates[i]-recentDates[i-1])/864e5);
+const avgRecentGap=recentGaps.reduce((a,b)=>a+b,0)/recentGaps.length;
+
+// Project: use recent avg gap (~2.5 days), favor high-score days, avoid Thursday
+const projDays=new Set();
+let cursor=new Date(sortDates[sortDates.length-1]);
+let gap=Math.round(avgRecentGap);
+for(let i=0;i<12;i++){
+  cursor=new Date(cursor.getTime()+gap*864e5);
+  const dow=cursor.getDay();
+  // Skip Thursday (score=1), adjust to next day
+  if(dow===4){cursor=new Date(cursor.getTime()+864e5);}
+  if(cursor.getMonth()<=7){
+    projDays.add(cursor.getMonth()+'-'+cursor.getDate());
+  }
+  // Gradually increase gap (slowing down)
+  if(i>4)gap=Math.min(gap+1,4);
 }
 
 function buildCal(month,year,label){
-  const first=new Date(year,month,1);
-  const daysInMonth=new Date(year,month+1,0).getDate();
-  const startDay=first.getDay();
-  let html=`<div class="cal-month"><h4>${label}</h4><div class="cal-grid">`;
-  ['S','M','T','W','T','F','S'].forEach(d=>{html+=`<div class="cal-head">${d}</div>`;});
-  for(let i=0;i<startDay;i++)html+=`<div class="cal-day empty">.</div>`;
-  for(let d=1;d<=daysInMonth;d++){
+  const dim=new Date(year,month+1,0).getDate();
+  const sd=new Date(year,month,1).getDay();
+  let h=`<div class="cal-card"><div class="cal-title">${label}</div><div class="cal-grid">`;
+  ['S','M','T','W','T','F','S'].forEach(d=>{h+=`<div class="cal-hd">${d}</div>`;});
+  for(let i=0;i<sd;i++)h+=`<div class="cd empty">.</div>`;
+  const today=5+'-'+25; // Jun 25
+  for(let d=1;d<=dim;d++){
     const key=month+'-'+d;
-    const isLive=liveDates.has(key);
-    const isProj=!isLive&&projDates.has(key);
-    const cls=isLive?'live':isProj?'proj':'';
-    html+=`<div class="cal-day ${cls}">${d}</div>`;
+    const isLive=liveDays.has(key);
+    const isProj=!isLive&&projDays.has(key);
+    const isToday=key===today;
+    let cls='cd';
+    if(isLive)cls+=' live';
+    else if(isProj)cls+=' proj';
+    if(isToday)cls+=' today';
+    h+=`<div class="${cls}">${d}</div>`;
   }
-  html+=`</div></div>`;
-  return html;
+  h+=`</div></div>`;
+  return h;
 }
 
-document.getElementById('calendar').innerHTML=
-  buildCal(5,2025,'June (actual streams in orange)')+
-  buildCal(6,2025,'July (projected streams dashed)');
+document.getElementById('calWrap').innerHTML=
+  buildCal(5,2025,'June')+
+  buildCal(6,2025,'July (projected)')+
+  `<div class="cal-legend"><span class="cl-live">Went live</span><span class="cl-proj">Likely to go live</span></div>`;
 
-// Next live prediction
-const dayOfWeek=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-const projArr=[...projDates].map(k=>{const p=k.split('-');return new Date(2025,+p[0],+p[1]);}).sort((a,b)=>a-b);
-const nextDate=projArr[0];
-const nextDay=dayOfWeek[nextDate.getDay()];
-const nextStr=months[nextDate.getMonth()]+' '+nextDate.getDate();
-
-document.getElementById('nextLive').innerHTML=`
+// Prediction
+const projArr=[...projDays].map(k=>{const p=k.split('-');return new Date(2025,+p[0],+p[1]);}).filter(d=>d>new Date(2025,5,25)).sort((a,b)=>a-b);
+const nxt=projArr[0];
+document.getElementById('predict').innerHTML=`
   <div class="emoji">&#128308;</div>
-  <div class="itxt">Based on the pattern, expect Finaygle live next around<br><strong>${nextDay}, ${nextStr}</strong><br>Usually starts <strong>${bestBracket.range}</strong></div>
+  <div class="ptxt">Based on the pattern, expect Finaygle live around<br><strong>${DOW[nxt.getDay()]}, ${MONTHS[nxt.getMonth()]} ${nxt.getDate()}</strong><br>Probably starting <strong>after 9 PM</strong><br><br><span style="font-size:12px;color:var(--muted)">He averages ${fm(Math.round(avgRecentGap*10)/10)} days between streams lately,<br>favors ${bestDow}s, and almost never goes live on Thursdays.</span></div>
 `;
 </script>
 </body>
