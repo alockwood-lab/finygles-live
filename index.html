@@ -277,59 +277,93 @@ const touch={interaction:{mode:'nearest',intersect:false},events:['mousemove','m
 document.addEventListener('click',e=>{if(!e.target.closest('canvas')){Chart.instances&&Object.values(Chart.instances).forEach(c=>{if(c.tooltip){c.tooltip.setActiveElements([],{});c.update();}});}});
 document.querySelectorAll('canvas').forEach(cv=>{cv.addEventListener('touchstart',function(e){const ch=Chart.getChart(this);if(ch){const r=this.getBoundingClientRect();const t=e.touches[0];const pts=ch.getElementsAtEventForMode(e,ch.options.interaction.mode,ch.options.interaction,false);if(!pts.length){ch.tooltip.setActiveElements([],{});ch.update();}}},{passive:true});});
 
-// Weekly chart with projections
-const wkLabels=wks.map((_,i)=>'Wk '+(i+1));
+// Weekly chart with projections — use date ranges as labels
+const wk0Date=new Date(2026,4,26);
+const nowWk=Math.floor((nowDate-wk0Date)/(7*864e5));
+function wkLabel(w){
+  const s=new Date(wk0Date.getTime()+w*7*864e5);
+  const e=new Date(s.getTime()+6*864e5);
+  const sm=(s.getMonth()+1)+'/'+s.getDate();
+  const em=(e.getMonth()+1)+'/'+e.getDate();
+  let lbl=sm+'–'+em;
+  if(w===nowWk)lbl+=' ★';
+  return lbl;
+}
+const wkLabels=wks.map(w=>wkLabel(w));
 const wkHrs=wks.map(w=>+wkMap[w].hrs.toFixed(1));
 const wkLk=wks.map(w=>wkMap[w].lk);
 
-// Project wk 6-7 using the calendar projection model (built below)
-// Count projected days per week, multiply by avg hrs/likes per day
-// projDays is populated later, so we calculate here after the fact —
-// moved to a function called after projection model runs
-let w6Hrs=0,w7Hrs=0,w6Lk=0,w7Lk=0;
+// Project future weeks using the calendar projection model
+// For the current (partial) week: actual data + projected remaining days
+// For fully future weeks: all projected
+const projWkData=[];
+const projWkNums=[];
 function calcWkProj(){
-  const wk0=new Date(2026,4,26);
   const _avgHrs=Object.values(dayStats).reduce((a,d)=>a+d.hrs,0)/Object.keys(dayStats).length;
   const _avgLk=Object.values(dayStats).reduce((a,d)=>a+d.lk,0)/Object.keys(dayStats).length;
-  [5,6].forEach(wn=>{
-    const wkStart=new Date(wk0.getTime()+wn*7*864e5);
+  // Find which weeks need projections (current partial + future)
+  const maxActual=Math.max(...wks);
+  for(let wn=maxActual;wn<=maxActual+2;wn++){
+    if(wks.includes(wn)&&wn<nowWk)continue; // fully completed actual week, skip
+    const wkStart=new Date(wk0Date.getTime()+wn*7*864e5);
     const wkEnd=new Date(wkStart.getTime()+7*864e5);
-    let days=0;
-    // Count actual days in this week
-    for(const k of liveDays){
-      const p=k.split('-');const dt=new Date(2026,+p[0],+p[1]);
-      if(dt>=wkStart&&dt<wkEnd)days++;
-    }
+    // Actual hours/likes already in this week
+    let actHrs=wkMap[wn]?wkMap[wn].hrs:0;
+    let actLk=wkMap[wn]?wkMap[wn].lk:0;
     // Count projected days in this week
     let projD=0;
     for(const k of projDays){
       const p=k.split('-');const dt=new Date(2026,+p[0],+p[1]);
       if(dt>=wkStart&&dt<wkEnd)projD++;
     }
-    const totalD=days+projD;
-    const hrs=+(days*(Object.values(dayStats).length?_avgHrs:8)+projD*_avgHrs).toFixed(1);
-    const lk=Math.round(days*_avgLk+projD*_avgLk);
-    if(wn===5){w6Hrs=hrs;w6Lk=lk;}
-    else{w7Hrs=hrs;w7Lk=lk;}
-  });
+    const hrs=+(actHrs+projD*_avgHrs).toFixed(1);
+    const lk=Math.round(actLk+projD*_avgLk);
+    projWkData.push({hrs,lk,wn,hasActual:!!wkMap[wn]});
+    projWkNums.push(wn);
+  }
 }
 
 // Chart rendered after projection model (deferred)
 function renderWeeklyChart(){
-  const allWkLabels=[...wkLabels,'Wk 6','Wk 7'];
-  const allHrs=[...wkHrs,w6Hrs,w7Hrs];
-  const allLk=[...wkLk,w6Lk,w7Lk];
+  // Completed past weeks (not current)
+  const pastWks=wks.filter(w=>w<nowWk);
+  const pastLabels=pastWks.map(w=>wkLabel(w));
+  const pastHrs=pastWks.map(w=>+wkMap[w].hrs.toFixed(1));
+  const pastLk=pastWks.map(w=>wkMap[w].lk);
+
+  // Current + future weeks from projection
+  const projLabels=projWkData.map(d=>wkLabel(d.wn));
+  const projHrs=projWkData.map(d=>d.hrs);
+  const projLks=projWkData.map(d=>d.lk);
+
+  const allLabels=[...pastLabels,...projLabels];
+  const allHrs=[...pastHrs,...projHrs];
+  const allLk=[...pastLk,...projLks];
+  const cutoff=pastWks.length;
+
+  // Color: past=solid, current/future=semi-transparent
+  const barBg=allHrs.map((_,i)=>{
+    if(i<cutoff)return 'rgba(232,118,58,.6)';
+    if(projWkData[i-cutoff].hasActual)return 'rgba(232,118,58,.4)';
+    return 'rgba(232,118,58,.2)';
+  });
+  const barBorder=allHrs.map((_,i)=>i<cutoff?0:1.5);
+
   new Chart(document.getElementById('weeklyChart'),{
     type:'bar',
-    data:{labels:allWkLabels,datasets:[
-      {label:'Hours Live',data:allHrs,backgroundColor:allHrs.map((_,i)=>i<wks.length?'rgba(232,118,58,.6)':'rgba(232,118,58,.2)'),borderColor:allHrs.map((_,i)=>i<wks.length?'#B8613A':'#B8613A'),borderWidth:allHrs.map((_,i)=>i<wks.length?0:1.5),borderRadius:6,borderSkipped:false,yAxisID:'y',order:2},
-      {label:'Likes',data:allLk,type:'line',borderColor:'#FF8F4F',backgroundColor:'rgba(255,143,79,.08)',pointBackgroundColor:allLk.map((_,i)=>i<wks.length?'#FF8F4F':'transparent'),pointBorderColor:allLk.map((_,i)=>i<wks.length?'#FF8F4F':'#FF8F4F'),pointRadius:allLk.map((_,i)=>i<wks.length?5:4),pointStyle:allLk.map((_,i)=>i<wks.length?'circle':'rectRot'),borderWidth:3,segment:{borderDash:ctx=>ctx.p0DataIndex>=wks.length-1?[6,4]:[]},tension:.3,fill:true,yAxisID:'y1',order:1},
+    data:{labels:allLabels,datasets:[
+      {label:'Hours Live',data:allHrs,backgroundColor:barBg,borderColor:'#B8613A',borderWidth:barBorder,borderRadius:6,borderSkipped:false,yAxisID:'y',order:2},
+      {label:'Likes',data:allLk,type:'line',borderColor:'#FF8F4F',backgroundColor:'rgba(255,143,79,.08)',pointBackgroundColor:allLk.map((_,i)=>i<cutoff?'#FF8F4F':'transparent'),pointBorderColor:'#FF8F4F',pointRadius:allLk.map((_,i)=>i<cutoff?5:4),pointStyle:allLk.map((_,i)=>i<cutoff?'circle':'rectRot'),borderWidth:3,segment:{borderDash:ctx=>ctx.p0DataIndex>=cutoff-1?[6,4]:[]},tension:.3,fill:true,yAxisID:'y1',order:1},
     ]},
     options:{...touch,responsive:true,maintainAspectRatio:false,plugins:{
       legend:{display:true,position:'bottom',labels:{boxWidth:10,padding:12,font:{size:11,family:'Inter'},color:'#9C8474'}},
-      tooltip:{callbacks:{label:ctx=>ctx.dataset.label==='Likes'?fm(ctx.raw)+' likes'+(ctx.dataIndex>=wks.length?' (projected)':''):ctx.raw+'h'+(ctx.dataIndex>=wks.length?' (projected)':'')}}},
+      tooltip:{callbacks:{label:ctx=>{
+        const isProj=ctx.dataIndex>=cutoff;
+        const tag=isProj?(projWkData[ctx.dataIndex-cutoff].hasActual?' (in progress + projected)':' (projected)'):'';
+        return ctx.dataset.label==='Likes'?fm(ctx.raw)+' likes'+tag:ctx.raw+'h'+tag;
+      }}}},
       scales:{
-        x:{grid:{display:false},ticks:{font:{size:11,weight:'bold',family:'Inter'}}},
+        x:{grid:{display:false},ticks:{font:{size:9,weight:'bold',family:'Inter'},maxRotation:45,minRotation:45}},
         y:{position:'left',title:{display:true,text:'Hours',font:{size:10},color:'#B8613A'},ticks:{font:{size:10},color:'#B8613A'},grid:{color:'rgba(74,56,40,.3)'}},
         y1:{position:'right',title:{display:true,text:'Likes',font:{size:10},color:'#FF8F4F'},ticks:{callback:v=>fm(v),font:{size:10},color:'#FF8F4F'},grid:{display:false}}
       }}
