@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Finaygle's Live</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#1C1210;--card:#2A1E19;--card2:#362820;--border:#4A3828;
+  --orange:#E8763A;--orange-bright:#FF8F4F;--orange-glow:rgba(232,118,58,.15);--orange-dim:#B8613A;
+  --cream:#F5E6D8;--muted:#9C8474;--white:#FFF5EE;
+  --green:#6BCB77;--red:#FF6B6B;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--cream);-webkit-font-smoothing:antialiased;}
+
+.header{background:linear-gradient(180deg,#3D2218 0%,var(--bg) 100%);padding:24px 20px 16px;text-align:center;}
+.header h1{font-size:28px;font-weight:900;color:var(--orange-bright);letter-spacing:-1px;}
+.header .sub{font-size:13px;color:var(--muted);margin-top:4px;}
+
+.page{max-width:480px;margin:0 auto;padding:0 16px 40px;}
+
+.big-stat{text-align:center;padding:24px 16px;margin-bottom:8px;}
+.big-stat .number{font-size:56px;font-weight:900;color:var(--orange-bright);line-height:1;letter-spacing:-2px;}
+.big-stat .label{font-size:14px;color:var(--muted);margin-top:6px;}
+
+.stat-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;text-align:center;}
+.stat-card .val{font-size:24px;font-weight:800;color:var(--white);}
+.stat-card .val.up{color:var(--green);}
+.stat-card .lbl{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.3;}
+
+.section{margin-top:24px;margin-bottom:8px;}
+.section-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--orange-dim);margin-bottom:12px;padding-left:4px;}
+
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px;}
+.chart-card h3{font-size:15px;font-weight:700;color:var(--white);margin-bottom:2px;}
+.chart-card .csub{font-size:12px;color:var(--muted);margin-bottom:12px;}
+.chart-wrap{position:relative;height:200px;}
+
+.streak{background:linear-gradient(135deg,#3D2218,#4A2E1E);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:12px;text-align:center;}
+.streak .fire{font-size:36px;line-height:1;}
+.streak .stxt{font-size:20px;font-weight:800;color:var(--orange-bright);margin-top:4px;}
+.streak .ssub{font-size:12px;color:var(--muted);margin-top:4px;}
+
+.stream-toggle{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 18px;margin-bottom:10px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.stream-toggle .st-left{font-size:14px;font-weight:700;color:var(--white);}
+.stream-toggle .st-count{font-size:12px;color:var(--muted);}
+.stream-toggle .st-arrow{font-size:16px;color:var(--orange);transition:transform .2s;}
+.stream-toggle.open .st-arrow{transform:rotate(180deg);}
+.stream-list{display:none;flex-direction:column;gap:8px;}
+.stream-list.show{display:flex;}
+.stream-item{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;}
+.stream-item.best{border-color:var(--orange);background:linear-gradient(135deg,#3D2218,#4A2E1E);}
+.si-left .si-date{font-size:13px;font-weight:700;color:var(--white);}
+.si-left .si-time{font-size:11px;color:var(--muted);margin-top:2px;}
+.si-right{text-align:right;}
+.si-right .si-likes{font-size:18px;font-weight:800;color:var(--orange-bright);}
+.si-right .si-dur{font-size:11px;color:var(--muted);margin-top:2px;}
+
+.proj-note{background:var(--card2);border-radius:12px;padding:14px 16px;font-size:12px;color:var(--muted);line-height:1.6;margin-top:12px;text-align:center;}
+.proj-note strong{color:var(--orange-bright);}
+
+.footer{text-align:center;padding:24px 16px;font-size:11px;color:#4A3828;margin-top:24px;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Finaygle's Live</h1>
+  <div class="sub">TikTok LIVE Performance &middot; May 26 – Jun 24</div>
+</div>
+
+<div class="page">
+
+<div class="big-stat">
+  <div class="number" id="totalLikes"></div>
+  <div class="label">total likes across all streams</div>
+</div>
+
+<div class="stat-row" id="stats"></div>
+
+<div class="streak" id="streak"></div>
+
+<div class="section"><div class="section-label">How You're Growing</div></div>
+<div class="chart-card">
+  <h3>Likes Each Day You Went Live</h3>
+  <div class="csub">Taller bar = more likes that day</div>
+  <div class="chart-wrap"><canvas id="dailyChart"></canvas></div>
+</div>
+
+<div class="chart-card">
+  <h3>Where You Could Be</h3>
+  <div class="csub">If you keep growing at this rate into July &amp; August</div>
+  <div class="chart-wrap" style="height:220px;"><canvas id="projChart"></canvas></div>
+</div>
+
+<div class="chart-card">
+  <h3>Week-over-Week Growth</h3>
+  <div class="csub">Green = more likes than last week, Red = less</div>
+  <div class="chart-wrap"><canvas id="wowChart"></canvas></div>
+</div>
+
+<div class="section"><div class="section-label">Every Stream</div></div>
+<div class="stream-toggle" id="streamToggle" onclick="toggleStreams()">
+  <div><div class="st-left">View All Streams</div><div class="st-count" id="streamCount"></div></div>
+  <span class="st-arrow">&#9660;</span>
+</div>
+<div class="stream-list" id="streamList"></div>
+
+<div class="proj-note">
+  Based on your current trend, you're on track for <strong id="projAug"></strong> total likes by end of August.
+  Keep going!
+</div>
+
+</div>
+
+<div class="footer">Finaygle's Live &middot; Stream Dashboard</div>
+
+<script>
+const STREAMS = [
+  {date:'May 26',start:'1:27 PM',end:'4:50 PM',likes:594},
+  {date:'May 26',start:'5:03 PM',end:'8:46 PM',likes:20500},
+  {date:'May 26',start:'8:48 PM',end:'11:25 PM',likes:2932},
+  {date:'May 27',start:'1:11 AM',end:'1:11 AM',likes:0},
+  {date:'May 27',start:'1:17 AM',end:'1:58 AM',likes:253},
+  {date:'May 27',start:'1:59 AM',end:'5:38 AM',likes:12500},
+  {date:'May 27',start:'5:40 AM',end:'12:48 PM',likes:51400},
+  {date:'May 27',start:'12:52 PM',end:'1:58 PM',likes:952},
+  {date:'May 27',start:'9:20 PM',end:'7:14 AM',likes:50100},
+  {date:'May 28',start:'8:23 PM',end:'10:28 PM',likes:2922},
+  {date:'May 28',start:'10:29 PM',end:'10:31 PM',likes:0},
+  {date:'May 31',start:'11:22 PM',end:'5:28 AM',likes:5843},
+  {date:'Jun 1',start:'7:52 PM',end:'7:04 AM',likes:14200},
+  {date:'Jun 2',start:'8:21 PM',end:'6:00 AM',likes:14100},
+  {date:'Jun 3',start:'7:22 PM',end:'7:23 PM',likes:0},
+  {date:'Jun 3',start:'7:24 PM',end:'11:49 PM',likes:23600},
+  {date:'Jun 4',start:'12:10 AM',end:'12:06 PM',likes:43800},
+  {date:'Jun 4',start:'9:01 PM',end:'3:10 AM',likes:21500},
+  {date:'Jun 5',start:'7:45 PM',end:'11:45 PM',likes:4612},
+  {date:'Jun 5',start:'11:45 PM',end:'8:41 AM',likes:32500},
+  {date:'Jun 6',start:'8:13 PM',end:'6:26 AM',likes:31900},
+  {date:'Jun 7',start:'7:18 PM',end:'6:37 AM',likes:33900},
+  {date:'Jun 8',start:'6:40 AM',end:'11:39 AM',likes:11500},
+  {date:'Jun 8',start:'8:46 PM',end:'5:41 AM',likes:9285},
+  {date:'Jun 9',start:'8:04 PM',end:'10:26 AM',likes:16500},
+  {date:'Jun 11',start:'9:08 PM',end:'5:13 AM',likes:26800},
+  {date:'Jun 14',start:'10:28 PM',end:'3:34 AM',likes:20500},
+  {date:'Jun 15',start:'11:22 PM',end:'3:51 AM',likes:10300},
+  {date:'Jun 17',start:'9:52 PM',end:'4:43 PM',likes:53400},
+  {date:'Jun 18',start:'8:55 PM',end:'5:03 AM',likes:12700},
+  {date:'Jun 20',start:'12:13 AM',end:'4:00 AM',likes:37400},
+  {date:'Jun 23',start:'6:56 PM',end:'11:39 PM',likes:18200},
+  {date:'Jun 23',start:'11:45 PM',end:'4:39 AM',likes:32600},
+  {date:'Jun 24',start:'9:54 PM',end:'6:02 AM',likes:13600},
+];
+
+function parseTime(t){const m=t.match(/(\d+):(\d+)\s*(AM|PM)/i);if(!m)return 0;let h=+m[1],min=+m[2];if(m[3].toUpperCase()==='PM'&&h!==12)h+=12;if(m[3].toUpperCase()==='AM'&&h===12)h=0;return h*60+min;}
+function dur(s,e){let sm=parseTime(s),em=parseTime(e);if(em<=sm)em+=24*60;const d=em-sm,h=Math.floor(d/60),m=d%60;return h>0?`${h}h ${m}m`:`${m}m`;}
+function fk(n){if(n>=1000)return(n/1000).toFixed(1)+'K';return n.toLocaleString();}
+
+const totalLikes=STREAMS.reduce((s,d)=>s+d.likes,0);
+const realStreams=STREAMS.filter(s=>s.likes>0);
+const avgPerStream=Math.round(totalLikes/realStreams.length);
+const best=STREAMS.reduce((a,b)=>a.likes>b.likes?a:b);
+
+document.getElementById('totalLikes').textContent=fk(totalLikes);
+
+// Daily aggregation
+const dailyMap={};
+STREAMS.forEach(s=>{dailyMap[s.date]=(dailyMap[s.date]||0)+s.likes;});
+const days=Object.keys(dailyMap);
+const dailyTotals=days.map(d=>dailyMap[d]);
+
+// Monthly aggregation for projection
+const mayLikes=STREAMS.filter(s=>s.date.startsWith('May')).reduce((a,b)=>a+b.likes,0);
+const junLikes=STREAMS.filter(s=>s.date.startsWith('Jun')).reduce((a,b)=>a+b.likes,0);
+const momGrowth=mayLikes>0?((junLikes-mayLikes)/mayLikes):0;
+const julProj=Math.round(junLikes*(1+momGrowth*0.8));
+const augProj=Math.round(julProj*(1+momGrowth*0.6));
+
+// Best day
+const bestDay=days.reduce((a,b)=>dailyMap[a]>dailyMap[b]?a:b);
+
+// Weekly aggregation
+function weekOf(dateStr) {
+  const monthDay = dateStr.split(' ');
+  const m = monthDay[0] === 'May' ? 4 : 5;
+  const d = parseInt(monthDay[1]);
+  const dt = new Date(2025, m, d);
+  const start = new Date(2025, 4, 26);
+  return Math.floor((dt - start) / (7*24*60*60*1000));
+}
+const weekMap = {};
+STREAMS.forEach(s => {
+  const w = weekOf(s.date);
+  weekMap[w] = (weekMap[w] || 0) + s.likes;
+});
+const weekNums = Object.keys(weekMap).map(Number).sort((a,b)=>a-b);
+const weekLabels = weekNums.map((w,i) => 'Wk ' + (i+1));
+const weekTotals = weekNums.map(w => weekMap[w]);
+const wowPcts = [null];
+for (let i=1; i<weekTotals.length; i++) {
+  if (weekTotals[i-1]===0) wowPcts.push(null);
+  else wowPcts.push(((weekTotals[i]-weekTotals[i-1])/weekTotals[i-1]*100));
+}
+
+// Stats
+document.getElementById('stats').innerHTML=`
+  <div class="stat-card"><div class="val">${realStreams.length}</div><div class="lbl">streams with likes</div></div>
+  <div class="stat-card"><div class="val">${fk(avgPerStream)}</div><div class="lbl">avg likes per stream</div></div>
+  <div class="stat-card"><div class="val">${fk(dailyMap[bestDay])}</div><div class="lbl">best day ever<br><span style="color:var(--orange)">${bestDay}</span></div></div>
+  <div class="stat-card"><div class="val up">+${Math.round(momGrowth*100)}%</div><div class="lbl">June vs May growth</div></div>
+`;
+
+// Streak
+const streamDays=[...new Set(STREAMS.map(s=>s.date))];
+document.getElementById('streak').innerHTML=`
+  <div class="fire">&#128293;</div>
+  <div class="stxt">${streamDays.length} Days Live</div>
+  <div class="ssub">You've gone live on ${streamDays.length} different days since May 26</div>
+`;
+
+// Chart defaults for dark theme + touch
+Chart.defaults.color='#9C8474';
+Chart.defaults.borderColor='#362820';
+const touchOpts = {interaction:{mode:'nearest',intersect:false},onHover:()=>{},events:['mousemove','mouseout','click','touchstart','touchmove']};
+
+// Daily chart
+new Chart(document.getElementById('dailyChart'),{
+  type:'bar',
+  data:{labels:days.map(d=>{const p=d.split(' ');return(p[0]==='May'?'5/':'6/')+p[1];}),
+    datasets:[{data:dailyTotals,backgroundColor:dailyTotals.map(v=>v===Math.max(...dailyTotals)?'#FF8F4F':'rgba(232,118,58,.6)'),borderRadius:6,borderSkipped:false}]},
+  options:{...touchOpts,responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
+    tooltip:{callbacks:{title:ctx=>days[ctx[0].dataIndex],label:ctx=>fk(ctx.raw)+' likes'}}},
+    scales:{x:{grid:{display:false},ticks:{font:{size:9,family:'Inter'},maxRotation:45}},
+      y:{ticks:{callback:v=>fk(v),font:{size:10}},grid:{color:'rgba(74,56,40,.4)'}}}}
+});
+
+// Projection chart
+new Chart(document.getElementById('projChart'),{
+  type:'bar',
+  data:{labels:['May','June','July (est.)','August (est.)'],
+    datasets:[{data:[mayLikes,junLikes,julProj,augProj],
+      backgroundColor:['rgba(232,118,58,.5)','rgba(232,118,58,.7)','rgba(255,143,79,.3)','rgba(255,143,79,.2)'],
+      borderColor:['#E8763A','#E8763A','#FF8F4F','#FF8F4F'],
+      borderWidth:[0,0,2,2],borderDash:[[],[],[6,4],[6,4]],borderRadius:8,borderSkipped:false}]},
+  options:{...touchOpts,responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
+    tooltip:{callbacks:{label:ctx=>fk(ctx.raw)+' likes'+(ctx.dataIndex>=2?' (projected)':'')}}},
+    scales:{x:{grid:{display:false},ticks:{font:{size:12,weight:'bold',family:'Inter'}}},
+      y:{ticks:{callback:v=>fk(v),font:{size:10}},grid:{color:'rgba(74,56,40,.4)'}}}}
+});
+
+// Week-over-Week chart
+new Chart(document.getElementById('wowChart'),{
+  type:'bar',
+  data:{labels:weekLabels,
+    datasets:[{data:wowPcts,
+      backgroundColor:wowPcts.map(v=>v===null?'transparent':v>=0?'rgba(107,203,119,.6)':'rgba(255,107,107,.6)'),
+      borderRadius:6,borderSkipped:false}]},
+  options:{...touchOpts,responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
+    tooltip:{callbacks:{title:ctx=>weekLabels[ctx[0].dataIndex],label:ctx=>ctx.raw!==null?(ctx.raw>0?'+':'')+ctx.raw.toFixed(0)+'%':'First week'}}},
+    scales:{x:{grid:{display:false},ticks:{font:{size:12,weight:'bold',family:'Inter'}}},
+      y:{ticks:{callback:v=>(v>0?'+':'')+v+'%',font:{size:10}},grid:{color:'rgba(74,56,40,.4)'}}}},
+  plugins:[{id:'zl',afterDraw(c){const{ctx:x,scales:{y}}=c;const yp=y.getPixelForValue(0);x.save();x.strokeStyle='#9C8474';x.lineWidth=1;x.setLineDash([3,3]);x.beginPath();x.moveTo(c.chartArea.left,yp);x.lineTo(c.chartArea.right,yp);x.stroke();x.restore();}}]
+});
+
+// Stream list (newest first)
+const list=document.getElementById('streamList');
+const top3=[...STREAMS].filter(s=>s.likes>0).sort((a,b)=>b.likes-a.likes).slice(0,3);
+[...STREAMS].reverse().forEach(s=>{
+  if(s.likes===0)return;
+  const rank=top3.indexOf(s);
+  const medal=rank===0?'&#129351;':rank===1?'&#129352;':rank===2?'&#129353;':'';
+  list.innerHTML+=`<div class="stream-item${rank===0?' best':''}">
+    <div class="si-left"><div class="si-date">${s.date}${medal?' '+medal:''}</div><div class="si-time">${s.start} – ${s.end}</div></div>
+    <div class="si-right"><div class="si-likes">${fk(s.likes)}</div><div class="si-dur">${dur(s.start,s.end)}</div></div>
+  </div>`;
+});
+
+document.getElementById('projAug').textContent=fk(totalLikes+julProj+augProj);
+document.getElementById('streamCount').textContent=realStreams.length+' streams — tap to expand';
+
+function toggleStreams(){
+  const list=document.getElementById('streamList');
+  const btn=document.getElementById('streamToggle');
+  list.classList.toggle('show');
+  btn.classList.toggle('open');
+  btn.querySelector('.st-left').textContent=list.classList.contains('show')?'Hide Streams':'View All Streams';
+}
+</script>
+</body>
+</html>
