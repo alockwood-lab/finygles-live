@@ -57,15 +57,31 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--c
 .cal-title{font-size:14px;font-weight:800;color:var(--white);text-align:center;margin-bottom:8px;}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center;}
 .cal-hd{font-size:10px;font-weight:700;color:var(--muted);padding:4px 0;}
-.cd{font-size:12px;padding:7px 2px;border-radius:8px;font-weight:600;color:#5A4A3E;}
+.cd{font-size:12px;padding:7px 2px;border-radius:8px;font-weight:600;color:#5A4A3E;cursor:pointer;transition:transform .1s;}
+.cd:active{transform:scale(.9);}
 .cd.live{background:var(--orange);color:#fff;}
 .cd.proj{background:rgba(255,143,79,.15);color:var(--bright);border:1.5px dashed rgba(255,143,79,.4);}
+.cd.rest{color:#5A4A3E;opacity:.4;font-style:italic;}
 .cd.today{box-shadow:inset 0 0 0 2px var(--white);}
 .cd.empty{visibility:hidden;}
-.cal-legend{display:flex;gap:16px;justify-content:center;margin-top:10px;font-size:11px;color:var(--muted);}
+.cd.sel{box-shadow:0 0 0 2px var(--bright);transform:scale(1.1);}
+.cal-legend{display:flex;gap:12px;justify-content:center;margin-top:10px;font-size:11px;color:var(--muted);flex-wrap:wrap;}
 .cal-legend span::before{content:'';display:inline-block;width:10px;height:10px;border-radius:4px;margin-right:4px;vertical-align:middle;}
 .cal-legend .cl-live::before{background:var(--orange);}
 .cal-legend .cl-proj::before{background:rgba(255,143,79,.15);border:1.5px dashed rgba(255,143,79,.4);}
+.cal-legend .cl-rest::before{background:transparent;border:1px solid #5A4A3E;opacity:.5;}
+.cal-detail{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-top:8px;display:none;text-align:center;animation:fadeIn .2s;}
+.cal-detail.show{display:block;}
+.cal-detail .cd-date{font-size:15px;font-weight:800;color:var(--white);}
+.cal-detail .cd-type{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-top:4px;}
+.cal-detail .cd-type.actual{color:var(--orange);}
+.cal-detail .cd-type.projected{color:var(--bright);opacity:.7;}
+.cal-detail .cd-stats{display:flex;justify-content:center;gap:20px;margin-top:10px;}
+.cal-detail .cd-stat{text-align:center;}
+.cal-detail .cd-val{font-size:20px;font-weight:800;color:var(--white);}
+.cal-detail .cd-lbl{font-size:10px;color:var(--muted);margin-top:2px;}
+.cal-detail .cd-streams{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.6;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:translateY(0);}}
 
 .predict{background:linear-gradient(135deg,#3D2218,#4A2E1E);border:1px solid var(--border);border-radius:16px;padding:18px;margin-top:12px;text-align:center;}
 .predict .emoji{font-size:28px;}
@@ -112,6 +128,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--c
 
 <div class="sec"><div class="sec-label">Stream Calendar</div></div>
 <div id="calWrap"></div>
+<div class="cal-detail" id="calDetail"></div>
 
 <div class="predict" id="predict"></div>
 
@@ -318,73 +335,110 @@ new Chart(document.getElementById('timeChart'),{
 });
 
 // ── Calendar ──
-const liveDays=new Set();
-[...new Set(S.map(x=>x.d))].forEach(ds=>{
-  const dt=td(ds);liveDays.add(dt.getMonth()+'-'+dt.getDate());
+
+// Build per-day actual data: hours, likes, stream details
+const dayStats={};
+S.forEach(x=>{
+  const dt=td(x.d);const key=dt.getMonth()+'-'+dt.getDate();
+  if(!dayStats[key])dayStats[key]={hrs:0,lk:0,streams:[],date:dt};
+  const mins=dm(x.s,x.e);
+  dayStats[key].hrs+=mins/60;
+  dayStats[key].lk+=x.lk;
+  if(x.lk>0)dayStats[key].streams.push({s:x.s,e:x.e,lk:x.lk,hrs:+(mins/60).toFixed(1)});
 });
 
-// Projection: based on actual streaming rate + day-of-week probability
+const liveDays=new Set(Object.keys(dayStats));
 const sortDates=[...new Set(S.map(x=>x.d))].map(td).sort((a,b)=>a-b);
 
-// Day-of-week probability — how often does he go live on each day?
-// Count weeks where each DOW existed in the date range, and how many he streamed
-const dowProb=[0,0,0,0,0,0,0];
-const dowAppear=[0,0,0,0,0,0,0];
+// ── Projection Model ──
+// Philosophy: he's trying to go live EVERY day. He misses 1-2 per week because life.
+// Look at May + June patterns to figure out which days he tends to miss.
+
+// Actual off-day analysis: which DOWs did he miss?
+const offDays=[0,0,0,0,0,0,0]; // count of off-days per DOW
+const totalDows=[0,0,0,0,0,0,0]; // total of each DOW in the range
 const rangeStart=sortDates[0];
 const rangeEnd=sortDates[sortDates.length-1];
-const streamDowSet=new Set(sortDates.map(d=>d.getTime()));
+const streamSet=new Set(sortDates.map(d=>d.getTime()));
 for(let d=new Date(rangeStart);d<=rangeEnd;d=new Date(d.getTime()+864e5)){
-  dowAppear[d.getDay()]++;
-  if(streamDowSet.has(d.getTime()))dowProb[d.getDay()]++;
+  const dow=d.getDay();
+  totalDows[dow]++;
+  if(!streamSet.has(d.getTime()))offDays[dow]++;
 }
-// Probability of going live on each DOW
-const dowRate=dowProb.map((ct,i)=>dowAppear[i]?ct/dowAppear[i]:0);
-// Overall rate: 21 unique dates in 30 days = 70%
-const overallRate=sortDates.length/((rangeEnd-rangeStart)/864e5+1);
+// Miss rate per DOW — higher = more likely to take that day off
+const missRate=offDays.map((off,i)=>totalDows[i]?off/totalDows[i]:0);
 
-// Project: for each future day through end of July,
-// mark as projected if DOW probability >= 50% (he streams on that day more often than not)
-// Then for lower-probability days, include if overall weekly count would be too low
+// Averages for projections
+const avgHrsPerDay=Object.values(dayStats).reduce((a,d)=>a+d.hrs,0)/Object.keys(dayStats).length;
+const avgLkPerDay=Object.values(dayStats).reduce((a,d)=>a+d.lk,0)/Object.keys(dayStats).length;
+const avgLkPerHr=avgLkPerDay/avgHrsPerDay;
+
+// Per-DOW average hours and likes (for projected day detail)
+const dowAvgHrs=[0,0,0,0,0,0,0];
+const dowAvgLk=[0,0,0,0,0,0,0];
+const dowCt=[0,0,0,0,0,0,0];
+Object.values(dayStats).forEach(d=>{
+  const dow=d.date.getDay();
+  dowAvgHrs[dow]+=d.hrs;
+  dowAvgLk[dow]+=d.lk;
+  dowCt[dow]++;
+});
+for(let i=0;i<7;i++){if(dowCt[i]){dowAvgHrs[i]/=dowCt[i];dowAvgLk[i]/=dowCt[i];}}
+
+// Project forward: every day is "projected live" EXCEPT ~2 rest days per week.
+// Pick the 2 highest miss-rate DOWs for each week as rest days.
+// Rotate slightly so it's not always the exact same 2 days.
 const projDays=new Set();
+const restDays=new Set();
 const lastStream=sortDates[sortDates.length-1];
-const projEnd=new Date(2026,7,0); // end of July
+const projEnd=new Date(2026,7,0);
 
-// Rank DOWs by probability
-const dowRank=[0,1,2,3,4,5,6].sort((a,b)=>dowRate[b]-dowRate[a]);
+// Rank DOWs by miss rate (highest = most likely to be a rest day)
+const dowByMiss=[0,1,2,3,4,5,6].sort((a,b)=>missRate[b]-missRate[a]);
 
-// Walk each week from lastStream through July
-const wkStartDate=new Date(lastStream.getTime()+864e5);
-let weekCursor=new Date(wkStartDate);
-// Find start of the week containing weekCursor (Sunday)
-weekCursor=new Date(weekCursor.getTime()-weekCursor.getDay()*864e5);
+let weekIdx=0;
+let wkCursor=new Date(lastStream.getTime()+864e5);
+wkCursor=new Date(wkCursor.getTime()-wkCursor.getDay()*864e5); // align to Sunday
 
-while(weekCursor<projEnd){
-  // For each day of this week
-  let weekProj=[];
+while(wkCursor<projEnd){
+  const daysThisWk=[];
   for(let dow=0;dow<7;dow++){
-    const dayDate=new Date(weekCursor.getTime()+dow*864e5);
+    const dayDate=new Date(wkCursor.getTime()+dow*864e5);
     if(dayDate<=lastStream||dayDate>projEnd)continue;
     const key=dayDate.getMonth()+'-'+dayDate.getDate();
     if(liveDays.has(key))continue;
-    weekProj.push({date:dayDate,key,rate:dowRate[dow],dow});
+    daysThisWk.push({date:dayDate,key,dow,miss:missRate[dow]});
   }
-  // Sort by probability, take top days to match ~4-5 per week (his actual pace)
-  // Use overall rate to determine how many: rate * available days this week
-  weekProj.sort((a,b)=>b.rate-a.rate);
-  const targetDays=Math.round(weekProj.length*overallRate);
-  const take=Math.max(targetDays,Math.min(3,weekProj.length));
-  for(let i=0;i<take;i++){
-    projDays.add(weekProj[i].key);
+  // Sort by miss rate descending — top 2 become rest days
+  // Rotate: shift the rest selection by weekIdx so it varies week to week
+  daysThisWk.sort((a,b)=>b.miss-a.miss);
+  const numRest=Math.min(2,Math.max(1,daysThisWk.length-4));
+  // Rotate which high-miss days get picked as rest
+  const restPool=daysThisWk.slice(0,Math.min(4,daysThisWk.length));
+  const picked=new Set();
+  for(let r=0;r<numRest&&r<restPool.length;r++){
+    const idx=(r+weekIdx)%restPool.length;
+    picked.add(restPool[idx].key);
+    restDays.add(restPool[idx].key);
   }
-  // Next week
-  weekCursor=new Date(weekCursor.getTime()+7*864e5);
+  // Everything else is projected live
+  daysThisWk.forEach(d=>{
+    if(!picked.has(d.key))projDays.add(d.key);
+  });
+  weekIdx++;
+  wkCursor=new Date(wkCursor.getTime()+7*864e5);
 }
 
-// Avg recent gap for prediction text
-const recentDates=sortDates.slice(-6);
-const recentGaps=[];
-for(let i=1;i<recentDates.length;i++)recentGaps.push((recentDates[i]-recentDates[i-1])/864e5);
-const avgRecentGap=recentGaps.reduce((a,b)=>a+b,0)/recentGaps.length;
+// Store projected day details for tap interaction
+const projStats={};
+projDays.forEach(key=>{
+  const p=key.split('-');
+  const dt=new Date(2026,+p[0],+p[1]);
+  const dow=dt.getDay();
+  const hrs=dowCt[dow]?dowAvgHrs[dow]:avgHrsPerDay;
+  const lk=dowCt[dow]?dowAvgLk[dow]:avgLkPerDay;
+  projStats[key]={hrs:+hrs.toFixed(1),lk:Math.round(lk),date:dt};
+});
 
 function buildCal(month,year,label){
   const dim=new Date(year,month+1,0).getDate();
@@ -396,13 +450,19 @@ function buildCal(month,year,label){
   for(let d=1;d<=dim;d++){
     const key=month+'-'+d;
     const isLive=liveDays.has(key);
-    const isProj=!isLive&&projDays.has(key);
+    const isProj=projDays.has(key);
+    const isRest=restDays.has(key);
     const isToday=key===today;
+    // Only show proj/rest for future or post-range dates
+    const dt=new Date(year,month,d);
+    const isFuture=dt>rangeEnd;
     let cls='cd';
     if(isLive)cls+=' live';
-    else if(isProj)cls+=' proj';
+    else if(isFuture&&isProj)cls+=' proj';
+    else if(isFuture&&isRest)cls+=' rest';
     if(isToday)cls+=' today';
-    h+=`<div class="${cls}">${d}</div>`;
+    const hasData=isLive||isProj;
+    h+=`<div class="${cls}" ${hasData?'data-key="'+key+'"':''}>${d}</div>`;
   }
   h+=`</div></div>`;
   return h;
@@ -412,15 +472,62 @@ document.getElementById('calWrap').innerHTML=
   buildCal(4,2026,'May')+
   buildCal(5,2026,'June')+
   buildCal(6,2026,'July (projected)')+
-  `<div class="cal-legend"><span class="cl-live">Went live</span><span class="cl-proj">Likely to go live</span></div>`;
+  `<div class="cal-legend"><span class="cl-live">Went live</span><span class="cl-proj">Projected live</span><span class="cl-rest">Projected rest</span></div>`;
+
+// Tap interaction on calendar days
+const calDetail=document.getElementById('calDetail');
+document.getElementById('calWrap').addEventListener('click',e=>{
+  const cell=e.target.closest('.cd[data-key]');
+  if(!cell)return;
+  // Remove previous selection
+  document.querySelectorAll('.cd.sel').forEach(c=>c.classList.remove('sel'));
+  cell.classList.add('sel');
+  const key=cell.dataset.key;
+  const p=key.split('-');
+  const dt=new Date(2026,+p[0],+p[1]);
+  const dayLabel=DOW[dt.getDay()]+', '+MONTHS[dt.getMonth()]+' '+dt.getDate();
+
+  if(dayStats[key]){
+    // Actual day
+    const d=dayStats[key];
+    const stList=d.streams.map(s=>`${s.s} – ${s.e} &middot; ${fm(s.lk)} likes &middot; ${s.hrs}h`).join('<br>');
+    calDetail.innerHTML=`
+      <div class="cd-date">${dayLabel}</div>
+      <div class="cd-type actual">ACTUAL</div>
+      <div class="cd-stats">
+        <div class="cd-stat"><div class="cd-val">${d.hrs.toFixed(1)}h</div><div class="cd-lbl">hours live</div></div>
+        <div class="cd-stat"><div class="cd-val">${fm(Math.round(d.lk))}</div><div class="cd-lbl">likes</div></div>
+        <div class="cd-stat"><div class="cd-val">${d.streams.length}</div><div class="cd-lbl">streams</div></div>
+      </div>
+      ${stList?'<div class="cd-streams">'+stList+'</div>':''}`;
+  } else if(projStats[key]){
+    // Projected day
+    const pr=projStats[key];
+    calDetail.innerHTML=`
+      <div class="cd-date">${dayLabel}</div>
+      <div class="cd-type projected">PROJECTED</div>
+      <div class="cd-stats">
+        <div class="cd-stat"><div class="cd-val">~${pr.hrs}h</div><div class="cd-lbl">est. hours</div></div>
+        <div class="cd-stat"><div class="cd-val">~${fm(pr.lk)}</div><div class="cd-lbl">est. likes</div></div>
+      </div>
+      <div class="cd-streams">Based on ${DOW[dt.getDay()]} avg: ${fm(Math.round(dowAvgHrs[dt.getDay()]*10)/10)}h live, ${fm(Math.round(dowAvgLk[dt.getDay()]))} likes</div>`;
+  }
+  calDetail.classList.add('show');
+  calDetail.scrollIntoView({behavior:'smooth',block:'nearest'});
+});
 
 // Prediction
 const projArr=[...projDays].map(k=>{const p=k.split('-');return new Date(2026,+p[0],+p[1]);}).filter(d=>d>new Date()).sort((a,b)=>a-b);
-const nxt=projArr[0];
-document.getElementById('predict').innerHTML=`
+const nxt=projArr.length?projArr[0]:null;
+const totalProjJul=[...projDays].filter(k=>k.startsWith('6-')).length;
+const totalRestJul=[...restDays].filter(k=>k.startsWith('6-')).length;
+const projJulLk=[...projDays].filter(k=>k.startsWith('6-')).reduce((a,k)=>a+(projStats[k]?projStats[k].lk:0),0);
+document.getElementById('predict').innerHTML=nxt?`
   <div class="emoji">&#128308;</div>
-  <div class="ptxt">Based on the pattern, expect Finaygle live around<br><strong>${DOW[nxt.getDay()]}, ${MONTHS[nxt.getMonth()]} ${nxt.getDate()}</strong><br>Probably starting <strong>after 9 PM</strong><br><br><span style="font-size:12px;color:var(--muted)">He averages ${fm(Math.round(avgRecentGap*10)/10)} days between streams lately,<br>favors ${bestDow}s, and almost never goes live on Thursdays.</span></div>
-`;
+  <div class="ptxt">Next stream expected<br><strong>${DOW[nxt.getDay()]}, ${MONTHS[nxt.getMonth()]} ${nxt.getDate()}</strong> &middot; probably <strong>after 9 PM</strong><br><br>
+  <span style="font-size:13px;"><strong>July forecast:</strong> ${totalProjJul} days live, ~${fm(projJulLk)} likes</span><br>
+  <span style="font-size:12px;color:var(--muted)">Model: he goes live almost every day, rests ~${totalRestJul} days in July.<br>Tap any date above for details.</span></div>
+`:'';
 </script>
 </body>
 </html>
