@@ -9,68 +9,62 @@
 <style>
 :root{
   --bg:#1C1210;--card:#2A1E19;--card2:#362820;--border:#4A3828;
-  --orange:#E8763A;--orange-bright:#FF8F4F;--orange-glow:rgba(232,118,58,.15);--orange-dim:#B8613A;
+  --orange:#E8763A;--bright:#FF8F4F;--glow:rgba(232,118,58,.15);--dim:#B8613A;
   --cream:#F5E6D8;--muted:#9C8474;--white:#FFF5EE;
   --green:#6BCB77;--red:#FF6B6B;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--cream);-webkit-font-smoothing:antialiased;}
 
-.header{background:linear-gradient(180deg,#3D2218 0%,var(--bg) 100%);padding:24px 20px 16px;text-align:center;}
-.header h1{font-size:28px;font-weight:900;color:var(--orange-bright);letter-spacing:-1px;}
+.header{background:linear-gradient(180deg,#3D2218 0%,var(--bg) 100%);padding:28px 20px 12px;text-align:center;}
+.header h1{font-size:28px;font-weight:900;color:var(--bright);letter-spacing:-1px;}
 .header .sub{font-size:13px;color:var(--muted);margin-top:4px;}
 
 .page{max-width:480px;margin:0 auto;padding:0 16px 40px;}
 
-.big-stat{text-align:center;padding:24px 16px;margin-bottom:8px;}
-.big-stat .number{font-size:56px;font-weight:900;color:var(--orange-bright);line-height:1;letter-spacing:-2px;}
-.big-stat .label{font-size:14px;color:var(--muted);margin-top:6px;}
+.big-stat{text-align:center;padding:20px 16px 8px;}
+.big-stat .number{font-size:52px;font-weight:900;color:var(--bright);line-height:1;letter-spacing:-2px;}
+.big-stat .label{font-size:13px;color:var(--muted);margin-top:6px;}
 
 .stat-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
 .stat-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;text-align:center;}
-.stat-card .val{font-size:24px;font-weight:800;color:var(--white);}
+.stat-card .val{font-size:22px;font-weight:800;color:var(--white);}
 .stat-card .val.up{color:var(--green);}
-.stat-card .lbl{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.3;}
+.stat-card .val.fire{color:var(--bright);}
+.stat-card .lbl{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.4;}
 
-.section{margin-top:24px;margin-bottom:8px;}
-.section-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--orange-dim);margin-bottom:12px;padding-left:4px;}
+.section{margin-top:24px;margin-bottom:10px;}
+.section-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--dim);padding-left:4px;}
 
 .chart-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px;}
 .chart-card h3{font-size:15px;font-weight:700;color:var(--white);margin-bottom:2px;}
-.chart-card .csub{font-size:12px;color:var(--muted);margin-bottom:12px;}
-.chart-wrap{position:relative;height:200px;}
+.chart-card .csub{font-size:12px;color:var(--muted);margin-bottom:14px;}
+.chart-wrap{position:relative;height:220px;}
 
-.streak{background:linear-gradient(135deg,#3D2218,#4A2E1E);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:12px;text-align:center;}
-.streak .fire{font-size:36px;line-height:1;}
-.streak .stxt{font-size:20px;font-weight:800;color:var(--orange-bright);margin-top:4px;}
-.streak .ssub{font-size:12px;color:var(--muted);margin-top:4px;}
+.cal{margin-bottom:12px;}
+.cal-month{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:10px;}
+.cal-month h4{font-size:14px;font-weight:700;color:var(--white);margin-bottom:10px;text-align:center;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;}
+.cal-head{font-size:10px;font-weight:700;color:var(--muted);padding:4px 0;}
+.cal-day{font-size:12px;padding:8px 2px;border-radius:8px;font-weight:600;color:var(--muted);}
+.cal-day.live{background:var(--orange);color:#fff;}
+.cal-day.proj{background:rgba(255,143,79,.2);color:var(--bright);border:1px dashed var(--bright);}
+.cal-day.empty{color:transparent;}
+.cal-day.today{box-shadow:0 0 0 2px var(--white);}
 
-.stream-toggle{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 18px;margin-bottom:10px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
-.stream-toggle .st-left{font-size:14px;font-weight:700;color:var(--white);}
-.stream-toggle .st-count{font-size:12px;color:var(--muted);}
-.stream-toggle .st-arrow{font-size:16px;color:var(--orange);transition:transform .2s;}
-.stream-toggle.open .st-arrow{transform:rotate(180deg);}
-.stream-list{display:none;flex-direction:column;gap:8px;}
-.stream-list.show{display:flex;}
-.stream-item{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;}
-.stream-item.best{border-color:var(--orange);background:linear-gradient(135deg,#3D2218,#4A2E1E);}
-.si-left .si-date{font-size:13px;font-weight:700;color:var(--white);}
-.si-left .si-time{font-size:11px;color:var(--muted);margin-top:2px;}
-.si-right{text-align:right;}
-.si-right .si-likes{font-size:18px;font-weight:800;color:var(--orange-bright);}
-.si-right .si-dur{font-size:11px;color:var(--muted);margin-top:2px;}
+.insight{background:linear-gradient(135deg,#3D2218,#4A2E1E);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:12px;text-align:center;}
+.insight .itxt{font-size:14px;color:var(--cream);line-height:1.6;}
+.insight .itxt strong{color:var(--bright);}
+.insight .emoji{font-size:28px;margin-bottom:6px;}
 
-.proj-note{background:var(--card2);border-radius:12px;padding:14px 16px;font-size:12px;color:var(--muted);line-height:1.6;margin-top:12px;text-align:center;}
-.proj-note strong{color:var(--orange-bright);}
-
-.footer{text-align:center;padding:24px 16px;font-size:11px;color:#4A3828;margin-top:24px;}
+.footer{text-align:center;padding:20px 16px;font-size:11px;color:#4A3828;margin-top:16px;}
 </style>
 </head>
 <body>
 
 <div class="header">
   <h1>Finaygle's Live</h1>
-  <div class="sub">TikTok LIVE Performance &middot; May 26 – Jun 24</div>
+  <div class="sub">TikTok LIVE &middot; May 26 – Jun 24</div>
 </div>
 
 <div class="page">
@@ -81,39 +75,21 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--c
 </div>
 
 <div class="stat-row" id="stats"></div>
+<div class="stat-row" id="stats2"></div>
 
-<div class="streak" id="streak"></div>
+<div class="insight" id="streakBox"></div>
 
-<div class="section"><div class="section-label">How You're Growing</div></div>
+<div class="section"><div class="section-label">Time Spent Live vs Likes</div></div>
 <div class="chart-card">
-  <h3>Likes Each Day You Went Live</h3>
-  <div class="csub">Taller bar = more likes that day</div>
-  <div class="chart-wrap"><canvas id="dailyChart"></canvas></div>
+  <h3>Hours Live &amp; Likes by Week</h3>
+  <div class="csub">More time live = more likes. The bars show hours, the line shows likes.</div>
+  <div class="chart-wrap" style="height:240px;"><canvas id="weeklyChart"></canvas></div>
 </div>
 
-<div class="chart-card">
-  <h3>Where You Could Be</h3>
-  <div class="csub">If you keep growing at this rate into July &amp; August</div>
-  <div class="chart-wrap" style="height:220px;"><canvas id="projChart"></canvas></div>
-</div>
+<div class="section"><div class="section-label">When to Catch the Next Stream</div></div>
+<div class="cal" id="calendar"></div>
 
-<div class="chart-card">
-  <h3>Week-over-Week Growth</h3>
-  <div class="csub">Green = more likes than last week, Red = less</div>
-  <div class="chart-wrap"><canvas id="wowChart"></canvas></div>
-</div>
-
-<div class="section"><div class="section-label">Every Stream</div></div>
-<div class="stream-toggle" id="streamToggle" onclick="toggleStreams()">
-  <div><div class="st-left">View All Streams</div><div class="st-count" id="streamCount"></div></div>
-  <span class="st-arrow">&#9660;</span>
-</div>
-<div class="stream-list" id="streamList"></div>
-
-<div class="proj-note">
-  Based on your current trend, you're on track for <strong id="projAug"></strong> total likes by end of August.
-  Keep going!
-</div>
+<div class="insight" id="nextLive"></div>
 
 </div>
 
@@ -158,138 +134,147 @@ const STREAMS = [
 ];
 
 function parseTime(t){const m=t.match(/(\d+):(\d+)\s*(AM|PM)/i);if(!m)return 0;let h=+m[1],min=+m[2];if(m[3].toUpperCase()==='PM'&&h!==12)h+=12;if(m[3].toUpperCase()==='AM'&&h===12)h=0;return h*60+min;}
-function dur(s,e){let sm=parseTime(s),em=parseTime(e);if(em<=sm)em+=24*60;const d=em-sm,h=Math.floor(d/60),m=d%60;return h>0?`${h}h ${m}m`:`${m}m`;}
-function fk(n){if(n>=1000)return(n/1000).toFixed(1)+'K';return n.toLocaleString();}
+function durMins(s,e){let sm=parseTime(s),em=parseTime(e);if(em<=sm)em+=24*60;return em-sm;}
+function fk(n){if(n>=1000000)return(n/1000000).toFixed(1)+'M';if(n>=1000)return(n/1000).toFixed(1)+'K';return n.toLocaleString();}
+function toDate(ds){const p=ds.split(' ');return new Date(2025,p[0]==='May'?4:5,+p[1]);}
 
+// Totals
 const totalLikes=STREAMS.reduce((s,d)=>s+d.likes,0);
-const realStreams=STREAMS.filter(s=>s.likes>0);
-const avgPerStream=Math.round(totalLikes/realStreams.length);
-const best=STREAMS.reduce((a,b)=>a.likes>b.likes?a:b);
-
+const totalMins=STREAMS.reduce((s,d)=>s+durMins(d.start,d.end),0);
+const totalHrs=(totalMins/60).toFixed(0);
 document.getElementById('totalLikes').textContent=fk(totalLikes);
 
-// Daily aggregation
-const dailyMap={};
-STREAMS.forEach(s=>{dailyMap[s.date]=(dailyMap[s.date]||0)+s.likes;});
-const days=Object.keys(dailyMap);
-const dailyTotals=days.map(d=>dailyMap[d]);
+// Best time analysis
+const brackets=[
+  {name:'Evening',range:'7 PM – 11 PM',min:19*60,max:23*60,likes:0,count:0},
+  {name:'Late Night',range:'11 PM – 3 AM',min:23*60,max:27*60,likes:0,count:0},
+  {name:'Overnight',range:'3 AM – 9 AM',min:3*60,max:9*60,likes:0,count:0},
+  {name:'Daytime',range:'9 AM – 7 PM',min:9*60,max:19*60,likes:0,count:0},
+];
+STREAMS.filter(s=>s.likes>0).forEach(s=>{
+  const t=parseTime(s.start);
+  brackets.forEach(b=>{
+    const lo=b.min%1440, hi=b.max%1440;
+    if(b.max>1440){if(t>=lo||t<hi){b.likes+=s.likes;b.count++;}}
+    else{if(t>=lo&&t<hi){b.likes+=s.likes;b.count++;}}
+  });
+});
+const bestBracket=brackets.filter(b=>b.count>0).sort((a,b)=>(b.likes/b.count)-(a.likes/a.count))[0];
 
-// Monthly aggregation for projection
+// Longest streak
+const streamDates=[...new Set(STREAMS.map(s=>s.date))].map(toDate).sort((a,b)=>a-b);
+let maxStreak=1,curStreak=1,streakStart=streamDates[0],streakEnd=streamDates[0],bestStreakStart=streamDates[0],bestStreakEnd=streamDates[0];
+for(let i=1;i<streamDates.length;i++){
+  const diff=(streamDates[i]-streamDates[i-1])/(24*60*60*1000);
+  if(diff===1){curStreak++;streakEnd=streamDates[i];if(curStreak>maxStreak){maxStreak=curStreak;bestStreakStart=streakStart;bestStreakEnd=streakEnd;}}
+  else{curStreak=1;streakStart=streamDates[i];streakEnd=streamDates[i];}
+}
+const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug'];
+const streakStartStr=months[bestStreakStart.getMonth()]+' '+bestStreakStart.getDate();
+const streakEndStr=months[bestStreakEnd.getMonth()]+' '+bestStreakEnd.getDate();
+
+// Stats
+const realStreams=STREAMS.filter(s=>s.likes>0);
+const avgPerStream=Math.round(totalLikes/realStreams.length);
 const mayLikes=STREAMS.filter(s=>s.date.startsWith('May')).reduce((a,b)=>a+b.likes,0);
 const junLikes=STREAMS.filter(s=>s.date.startsWith('Jun')).reduce((a,b)=>a+b.likes,0);
 const momGrowth=mayLikes>0?((junLikes-mayLikes)/mayLikes):0;
-const julProj=Math.round(junLikes*(1+momGrowth*0.8));
-const augProj=Math.round(julProj*(1+momGrowth*0.6));
 
-// Best day
-const bestDay=days.reduce((a,b)=>dailyMap[a]>dailyMap[b]?a:b);
-
-// Weekly aggregation
-function weekOf(dateStr) {
-  const monthDay = dateStr.split(' ');
-  const m = monthDay[0] === 'May' ? 4 : 5;
-  const d = parseInt(monthDay[1]);
-  const dt = new Date(2025, m, d);
-  const start = new Date(2025, 4, 26);
-  return Math.floor((dt - start) / (7*24*60*60*1000));
-}
-const weekMap = {};
-STREAMS.forEach(s => {
-  const w = weekOf(s.date);
-  weekMap[w] = (weekMap[w] || 0) + s.likes;
-});
-const weekNums = Object.keys(weekMap).map(Number).sort((a,b)=>a-b);
-const weekLabels = weekNums.map((w,i) => 'Wk ' + (i+1));
-const weekTotals = weekNums.map(w => weekMap[w]);
-const wowPcts = [null];
-for (let i=1; i<weekTotals.length; i++) {
-  if (weekTotals[i-1]===0) wowPcts.push(null);
-  else wowPcts.push(((weekTotals[i]-weekTotals[i-1])/weekTotals[i-1]*100));
-}
-
-// Stats
 document.getElementById('stats').innerHTML=`
-  <div class="stat-card"><div class="val">${realStreams.length}</div><div class="lbl">streams with likes</div></div>
+  <div class="stat-card"><div class="val">${totalHrs}h</div><div class="lbl">total hours live</div></div>
   <div class="stat-card"><div class="val">${fk(avgPerStream)}</div><div class="lbl">avg likes per stream</div></div>
-  <div class="stat-card"><div class="val">${fk(dailyMap[bestDay])}</div><div class="lbl">best day ever<br><span style="color:var(--orange)">${bestDay}</span></div></div>
+`;
+document.getElementById('stats2').innerHTML=`
   <div class="stat-card"><div class="val up">+${Math.round(momGrowth*100)}%</div><div class="lbl">June vs May growth</div></div>
+  <div class="stat-card"><div class="val fire">${bestBracket.name}</div><div class="lbl">best time to go live<br>${bestBracket.range}</div></div>
 `;
 
-// Streak
-const streamDays=[...new Set(STREAMS.map(s=>s.date))];
-document.getElementById('streak').innerHTML=`
-  <div class="fire">&#128293;</div>
-  <div class="stxt">${streamDays.length} Days Live</div>
-  <div class="ssub">You've gone live on ${streamDays.length} different days since May 26</div>
+document.getElementById('streakBox').innerHTML=`
+  <div class="emoji">&#128293;&#128293;&#128293;</div>
+  <div class="itxt"><strong>${maxStreak}-day streak!</strong><br>${streakStartStr} – ${streakEndStr}<br>That's ${maxStreak} days in a row going live</div>
 `;
 
-// Chart defaults for dark theme + touch
+// Weekly data: hours + likes
+function weekOf(ds){const dt=toDate(ds);const start=new Date(2025,4,26);return Math.floor((dt-start)/(7*24*60*60*1000));}
+const weekHrs={},weekLikes={};
+STREAMS.forEach(s=>{
+  const w=weekOf(s.date);
+  weekHrs[w]=(weekHrs[w]||0)+durMins(s.start,s.end)/60;
+  weekLikes[w]=(weekLikes[w]||0)+s.likes;
+});
+const wks=Object.keys(weekHrs).map(Number).sort((a,b)=>a-b);
+const wkLabels=wks.map((_,i)=>'Wk '+(i+1));
+const wkHrsData=wks.map(w=>+weekHrs[w].toFixed(1));
+const wkLikesData=wks.map(w=>weekLikes[w]);
+
 Chart.defaults.color='#9C8474';
 Chart.defaults.borderColor='#362820';
-const touchOpts = {interaction:{mode:'nearest',intersect:false},onHover:()=>{},events:['mousemove','mouseout','click','touchstart','touchmove']};
+const touchOpts={interaction:{mode:'nearest',intersect:false},events:['mousemove','mouseout','click','touchstart','touchmove']};
 
-// Daily chart
-new Chart(document.getElementById('dailyChart'),{
+new Chart(document.getElementById('weeklyChart'),{
   type:'bar',
-  data:{labels:days.map(d=>{const p=d.split(' ');return(p[0]==='May'?'5/':'6/')+p[1];}),
-    datasets:[{data:dailyTotals,backgroundColor:dailyTotals.map(v=>v===Math.max(...dailyTotals)?'#FF8F4F':'rgba(232,118,58,.6)'),borderRadius:6,borderSkipped:false}]},
-  options:{...touchOpts,responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
-    tooltip:{callbacks:{title:ctx=>days[ctx[0].dataIndex],label:ctx=>fk(ctx.raw)+' likes'}}},
-    scales:{x:{grid:{display:false},ticks:{font:{size:9,family:'Inter'},maxRotation:45}},
-      y:{ticks:{callback:v=>fk(v),font:{size:10}},grid:{color:'rgba(74,56,40,.4)'}}}}
+  data:{labels:wkLabels,datasets:[
+    {label:'Hours Live',data:wkHrsData,backgroundColor:'rgba(232,118,58,.6)',borderRadius:6,borderSkipped:false,yAxisID:'y',order:2},
+    {label:'Likes',data:wkLikesData,type:'line',borderColor:'#FF8F4F',backgroundColor:'rgba(255,143,79,.1)',pointBackgroundColor:'#FF8F4F',pointRadius:5,pointHoverRadius:8,borderWidth:3,tension:.3,fill:true,yAxisID:'y1',order:1},
+  ]},
+  options:{...touchOpts,responsive:true,maintainAspectRatio:false,plugins:{
+    legend:{display:true,position:'bottom',labels:{boxWidth:10,padding:12,font:{size:11,family:'Inter'},color:'#9C8474'}},
+    tooltip:{callbacks:{label:ctx=>ctx.dataset.label==='Likes'?fk(ctx.raw)+' likes':ctx.raw+'h live'}}},
+    scales:{
+      x:{grid:{display:false},ticks:{font:{size:12,weight:'bold',family:'Inter'}}},
+      y:{position:'left',title:{display:true,text:'Hours',font:{size:10},color:'#9C8474'},ticks:{font:{size:10},color:'#B8613A'},grid:{color:'rgba(74,56,40,.3)'}},
+      y1:{position:'right',title:{display:true,text:'Likes',font:{size:10},color:'#9C8474'},ticks:{callback:v=>fk(v),font:{size:10},color:'#FF8F4F'},grid:{display:false}}
+    }}
 });
 
-// Projection chart
-new Chart(document.getElementById('projChart'),{
-  type:'bar',
-  data:{labels:['May','June','July (est.)','August (est.)'],
-    datasets:[{data:[mayLikes,junLikes,julProj,augProj],
-      backgroundColor:['rgba(232,118,58,.5)','rgba(232,118,58,.7)','rgba(255,143,79,.3)','rgba(255,143,79,.2)'],
-      borderColor:['#E8763A','#E8763A','#FF8F4F','#FF8F4F'],
-      borderWidth:[0,0,2,2],borderDash:[[],[],[6,4],[6,4]],borderRadius:8,borderSkipped:false}]},
-  options:{...touchOpts,responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
-    tooltip:{callbacks:{label:ctx=>fk(ctx.raw)+' likes'+(ctx.dataIndex>=2?' (projected)':'')}}},
-    scales:{x:{grid:{display:false},ticks:{font:{size:12,weight:'bold',family:'Inter'}}},
-      y:{ticks:{callback:v=>fk(v),font:{size:10}},grid:{color:'rgba(74,56,40,.4)'}}}}
-});
+// Calendar
+const liveDates=new Set(STREAMS.map(s=>{const p=s.date.split(' ');return(p[0]==='May'?4:5)+'-'+p[1];}));
 
-// Week-over-Week chart
-new Chart(document.getElementById('wowChart'),{
-  type:'bar',
-  data:{labels:weekLabels,
-    datasets:[{data:wowPcts,
-      backgroundColor:wowPcts.map(v=>v===null?'transparent':v>=0?'rgba(107,203,119,.6)':'rgba(255,107,107,.6)'),
-      borderRadius:6,borderSkipped:false}]},
-  options:{...touchOpts,responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
-    tooltip:{callbacks:{title:ctx=>weekLabels[ctx[0].dataIndex],label:ctx=>ctx.raw!==null?(ctx.raw>0?'+':'')+ctx.raw.toFixed(0)+'%':'First week'}}},
-    scales:{x:{grid:{display:false},ticks:{font:{size:12,weight:'bold',family:'Inter'}}},
-      y:{ticks:{callback:v=>(v>0?'+':'')+v+'%',font:{size:10}},grid:{color:'rgba(74,56,40,.4)'}}}},
-  plugins:[{id:'zl',afterDraw(c){const{ctx:x,scales:{y}}=c;const yp=y.getPixelForValue(0);x.save();x.strokeStyle='#9C8474';x.lineWidth=1;x.setLineDash([3,3]);x.beginPath();x.moveTo(c.chartArea.left,yp);x.lineTo(c.chartArea.right,yp);x.stroke();x.restore();}}]
-});
-
-// Stream list (newest first)
-const list=document.getElementById('streamList');
-const top3=[...STREAMS].filter(s=>s.likes>0).sort((a,b)=>b.likes-a.likes).slice(0,3);
-[...STREAMS].reverse().forEach(s=>{
-  if(s.likes===0)return;
-  const rank=top3.indexOf(s);
-  const medal=rank===0?'&#129351;':rank===1?'&#129352;':rank===2?'&#129353;':'';
-  list.innerHTML+=`<div class="stream-item${rank===0?' best':''}">
-    <div class="si-left"><div class="si-date">${s.date}${medal?' '+medal:''}</div><div class="si-time">${s.start} – ${s.end}</div></div>
-    <div class="si-right"><div class="si-likes">${fk(s.likes)}</div><div class="si-dur">${dur(s.start,s.end)}</div></div>
-  </div>`;
-});
-
-document.getElementById('projAug').textContent=fk(totalLikes+julProj+augProj);
-document.getElementById('streamCount').textContent=realStreams.length+' streams — tap to expand';
-
-function toggleStreams(){
-  const list=document.getElementById('streamList');
-  const btn=document.getElementById('streamToggle');
-  list.classList.toggle('show');
-  btn.classList.toggle('open');
-  btn.querySelector('.st-left').textContent=list.classList.contains('show')?'Hide Streams':'View All Streams';
+// Predict next streams: avg gap between stream days
+const sortedDates=[...new Set(STREAMS.map(s=>s.date))].map(toDate).sort((a,b)=>a-b);
+const gaps=[];
+for(let i=1;i<sortedDates.length;i++)gaps.push((sortedDates[i]-sortedDates[i-1])/(24*60*60*1000));
+const avgGap=gaps.reduce((a,b)=>a+b,0)/gaps.length;
+const projDates=new Set();
+let last=sortedDates[sortedDates.length-1];
+for(let i=0;i<15;i++){
+  last=new Date(last.getTime()+Math.round(avgGap)*24*60*60*1000);
+  if(last.getMonth()<=7)projDates.add(last.getMonth()+'-'+last.getDate());
 }
+
+function buildCal(month,year,label){
+  const first=new Date(year,month,1);
+  const daysInMonth=new Date(year,month+1,0).getDate();
+  const startDay=first.getDay();
+  let html=`<div class="cal-month"><h4>${label}</h4><div class="cal-grid">`;
+  ['S','M','T','W','T','F','S'].forEach(d=>{html+=`<div class="cal-head">${d}</div>`;});
+  for(let i=0;i<startDay;i++)html+=`<div class="cal-day empty">.</div>`;
+  for(let d=1;d<=daysInMonth;d++){
+    const key=month+'-'+d;
+    const isLive=liveDates.has(key);
+    const isProj=!isLive&&projDates.has(key);
+    const cls=isLive?'live':isProj?'proj':'';
+    html+=`<div class="cal-day ${cls}">${d}</div>`;
+  }
+  html+=`</div></div>`;
+  return html;
+}
+
+document.getElementById('calendar').innerHTML=
+  buildCal(5,2025,'June (actual streams in orange)')+
+  buildCal(6,2025,'July (projected streams dashed)');
+
+// Next live prediction
+const dayOfWeek=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const projArr=[...projDates].map(k=>{const p=k.split('-');return new Date(2025,+p[0],+p[1]);}).sort((a,b)=>a-b);
+const nextDate=projArr[0];
+const nextDay=dayOfWeek[nextDate.getDay()];
+const nextStr=months[nextDate.getMonth()]+' '+nextDate.getDate();
+
+document.getElementById('nextLive').innerHTML=`
+  <div class="emoji">&#128308;</div>
+  <div class="itxt">Based on the pattern, expect Finaygle live next around<br><strong>${nextDay}, ${nextStr}</strong><br>Usually starts <strong>${bestBracket.range}</strong></div>
+`;
 </script>
 </body>
 </html>
