@@ -350,13 +350,21 @@ S.forEach(x=>{
 const liveDays=new Set(Object.keys(dayStats));
 const sortDates=[...new Set(S.map(x=>x.d))].map(td).sort((a,b)=>a-b);
 
+// Days between last stream and today with no data = confirmed off days
+const confirmedOff=new Set();
+const nowDate=new Date();const todayKey=nowDate.getMonth()+'-'+nowDate.getDate();
+for(let d=new Date(sortDates[sortDates.length-1].getTime()+864e5);d<=nowDate;d=new Date(d.getTime()+864e5)){
+  const k=d.getMonth()+'-'+d.getDate();
+  if(!liveDays.has(k))confirmedOff.add(k);
+}
+
 // ── Projection Model ──
 // Philosophy: he's trying to go live EVERY day. He misses 1-2 per week because life.
 // Look at May + June patterns to figure out which days he tends to miss.
 
 // Actual off-day analysis: which DOWs did he miss?
-const offDays=[0,0,0,0,0,0,0]; // count of off-days per DOW
-const totalDows=[0,0,0,0,0,0,0]; // total of each DOW in the range
+const offDays=[0,0,0,0,0,0,0];
+const totalDows=[0,0,0,0,0,0,0];
 const rangeStart=sortDates[0];
 const rangeEnd=sortDates[sortDates.length-1];
 const streamSet=new Set(sortDates.map(d=>d.getTime()));
@@ -407,6 +415,8 @@ while(wkCursor<projEnd){
     if(dayDate<=lastStream||dayDate>projEnd)continue;
     const key=dayDate.getMonth()+'-'+dayDate.getDate();
     if(liveDays.has(key))continue;
+    // Already confirmed off (between last stream and today with no data)
+    if(confirmedOff.has(key)){restDays.add(key);continue;}
     daysThisWk.push({date:dayDate,key,dow,miss:missRate[dow]});
   }
   // Sort by miss rate descending — top 2 become rest days
