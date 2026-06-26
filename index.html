@@ -239,9 +239,16 @@ const bestStream=real.sort((a,b)=>b.lk-a.lk)[0];
 const bestEffStream=real.filter(x=>dm(x.s,x.e)>120).sort((a,b)=>(b.lk/dm(b.s,b.e))-(a.lk/dm(a.s,a.e)))[0];
 const bestEffLph=Math.round(bestEffStream.lk/(dm(bestEffStream.s,bestEffStream.e)/60));
 
-// Insights
+// Insights — all dynamic from data
+const dowSorted=DOW.filter(d=>dowData[d].ct>0).sort((a,b)=>(dowData[b].lk/dowData[b].ct)-(dowData[a].lk/dowData[a].ct));
+const worstDow=dowSorted[dowSorted.length-1];
+const secondBest=dowSorted[1];
+const bestVsSecond=(bestDowAvg/(dowData[secondBest].lk/dowData[secondBest].ct)).toFixed(1);
+const rarestDow=DOW.filter(d=>dowData[d].ct>=0).sort((a,b)=>dowData[a].ct-dowData[b].ct)[0];
+const rarestCt=dowData[rarestDow].ct;
+const dimText=rarestCt===0?`<span class="dim">${rarestDow}s? Never went live.</span>`:(rarestCt===1?`<span class="dim">${rarestDow}s? Only once.</span>`:'');
 document.getElementById('insights').innerHTML=`
-  <div class="insight"><div class="ico">&#128171;</div><div class="itxt"><strong>${bestDow}s are the golden day</strong> — averaging ${fm(bestDowAvg)} likes. That's nearly <strong>2x</strong> any other day of the week. <span class="dim">Thursdays? Only went live once ever.</span></div></div>
+  <div class="insight"><div class="ico">&#128171;</div><div class="itxt"><strong>${bestDow}s are the golden day</strong> — averaging ${fm(bestDowAvg)} likes, <strong>${bestVsSecond}x</strong> more than ${secondBest}s. ${dimText}</div></div>
   <div class="insight"><div class="ico">&#127769;</div><div class="itxt">Streams starting <strong>${bestTime.name.toLowerCase()}</strong> pull <strong>${timeMultiple.toFixed(1)}x more likes</strong> than daytime. The algorithm favors night owls.</div></div>
   <div class="insight"><div class="ico">&#128200;</div><div class="itxt">Hours are down 78% since Week 2, but <strong>likes per hour ${effChange>0?'up':'shifted'} ${Math.abs(effChange)}%</strong>. Less grinding, smarter streaming. Best efficiency: <strong>${fm(bestEffLph)} likes/hr</strong> on ${bestEffStream.d}.</div></div>
 `;
