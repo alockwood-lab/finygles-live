@@ -159,7 +159,7 @@ const S = [
 
 function pt(t){const m=t.match(/(\d+):(\d+)\s*(AM|PM)/i);let h=+m[1],mm=+m[2];if(m[3]==='PM'&&h!==12)h+=12;if(m[3]==='AM'&&h===12)h=0;return h*60+mm;}
 function dm(a,b){let x=pt(a),y=pt(b);if(y<=x)y+=1440;return y-x;}
-function td(ds){const p=ds.split(' ');return new Date(2025,p[0]==='May'?4:5,+p[1]);}
+function td(ds){const p=ds.split(' ');return new Date(2026,p[0]==='May'?4:5,+p[1]);}
 function fm(n){return n.toLocaleString();}
 const DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug'];
@@ -228,7 +228,7 @@ const timeMultiple=(bestTime.lk/bestTime.ct)/(worstTime.lk/worstTime.ct);
 
 // Efficiency trend
 const wkMap={};
-S.forEach(x=>{const w=Math.floor((td(x.d)-new Date(2025,4,26))/(7*864e5));if(!wkMap[w])wkMap[w]={lk:0,hrs:0,days:new Set()};wkMap[w].lk+=x.lk;wkMap[w].hrs+=dm(x.s,x.e)/60;wkMap[w].days.add(x.d);});
+S.forEach(x=>{const w=Math.floor((td(x.d)-new Date(2026,4,26))/(7*864e5));if(!wkMap[w])wkMap[w]={lk:0,hrs:0,days:new Set()};wkMap[w].lk+=x.lk;wkMap[w].hrs+=dm(x.s,x.e)/60;wkMap[w].days.add(x.d);});
 const wks=Object.keys(wkMap).map(Number).sort((a,b)=>a-b);
 const wk2Eff=Math.round(wkMap[1].lk/(wkMap[1].hrs));
 const wk5Eff=Math.round(wkMap[wks[wks.length-1]].lk/(wkMap[wks[wks.length-1]].hrs));
@@ -365,12 +365,12 @@ function buildCal(month,year,label){
 }
 
 document.getElementById('calWrap').innerHTML=
-  buildCal(5,2025,'June')+
-  buildCal(6,2025,'July (projected)')+
+  buildCal(5,2026,'June')+
+  buildCal(6,2026,'July (projected)')+
   `<div class="cal-legend"><span class="cl-live">Went live</span><span class="cl-proj">Likely to go live</span></div>`;
 
 // Prediction
-const projArr=[...projDays].map(k=>{const p=k.split('-');return new Date(2025,+p[0],+p[1]);}).filter(d=>d>new Date(2025,5,25)).sort((a,b)=>a-b);
+const projArr=[...projDays].map(k=>{const p=k.split('-');return new Date(2026,+p[0],+p[1]);}).filter(d=>d>new Date()).sort((a,b)=>a-b);
 const nxt=projArr[0];
 document.getElementById('predict').innerHTML=`
   <div class="emoji">&#128308;</div>
